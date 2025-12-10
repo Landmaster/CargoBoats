@@ -1,0 +1,11 @@
+{
+  "motorboat": {
+    "sounds": [
+      {
+        "name": "cargoboats:motorboat",
+        "stream": true,
+        "attenuation_distance": 32
+      }
+    ]
+  }
+}

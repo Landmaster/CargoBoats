@@ -1,0 +1,22 @@
+{
+  "itemGroup.cargoboats": "Cargo Boats",
+  "block.cargoboats.dock": "Dock",
+  "item.cargoboats.motorboat": "Motorboat",
+  "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
+
+  "cargoboats.configuration.title": "Cargo Boats Configs",
+  "cargoboats.configuration.section.cargoboats.common.toml": "Cargo Boats Configs",
+  "cargoboats.configuration.section.cargoboats.common.toml.title": "Cargo Boats Configs",
+
+  "gui.cargoboats.rf_indicator": "%d RF / %d RF",
+  "gui.cargoboats.next_stop": "Next stop: %s",
+
+  "message.cargoboats.dock_added": "Dock added to schedule: %s",
+  "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",
+
+  "tooltip.cargoboats.motorboat_schedule": "Stop at dock %s for %d ticks",
+  "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock to add it to a schedule",
+  "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
+  "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
+  "tooltip.cargoboats.motorboat_programmer_instructions.3": "Schedule can have up to 20 destinations"
+}

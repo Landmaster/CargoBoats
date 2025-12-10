@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "cargoboats:block/dock",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "cargoboats:block/dock"
+    },
+    "facing=south": {
+      "model": "cargoboats:block/dock",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "cargoboats:block/dock",
+      "y": 270
+    }
+  }
+}
