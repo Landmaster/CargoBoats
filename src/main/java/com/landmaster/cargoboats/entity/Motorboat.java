@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.PriorityQueue;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -62,7 +63,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     private static final EntityDataAccessor<Integer> ENERGY = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.INT);
     private List<Vec3i> path = ImmutableList.of();
     private int dockTime = 0;
-    private boolean automationEnabled = true;
+    public boolean automationEnabled = true;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -76,9 +77,6 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
         @Override
         public void set(int index, int value) {
-            if (index == 1) {
-                automationEnabled = value != 0;
-            }
         }
 
         @Override
@@ -194,6 +192,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
                     if (dockTime >= motorboatSchedule.entries().get(nextStopIdx).stopTime()) {
                         getEntityData().set(NEXT_STOP_INDEX, (nextStopIdx + 1) % motorboatSchedule.entries().size());
                         dockTime = 0;
+                        playSound(CargoBoats.BOAT_HORN_SOUND.get(), 0.5f, 0.0f);
                     }
                     path = ImmutableList.of();
                     ++dockTime;
@@ -239,7 +238,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
             if (!level().isClientSide && automationEnabled) {
                 targetLocation().ifPresent(vec -> {
-                    var deltaVector = Vec3.atLowerCornerOf(vec).subtract(position());
+                    var deltaVector = vec.subtract(position());
                     int energyConsumption = energyConsumption();
                     if (deltaVector.horizontalDistance() < 0.15) {
                         path.removeLast();
@@ -302,8 +301,10 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     }
 
     private class PlayMotorboatSound {
+        private final MotorboatSoundInstance soundInstance = new MotorboatSoundInstance(Motorboat.this);
+
         public void run() {
-            Minecraft.getInstance().getSoundManager().play(new MotorboatSoundInstance(Motorboat.this));
+            Minecraft.getInstance().getSoundManager().play(soundInstance);
         }
     }
 
@@ -354,6 +355,11 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         return true;
     }
 
+    @Override
+    public boolean isAlwaysTicking() {
+        return true;
+    }
+
     private record PathfindPQEntry(double cost, Vec3i point) implements Comparable<PathfindPQEntry> {
         @Override
         public int compareTo(@Nonnull PathfindPQEntry o) {
@@ -371,28 +377,64 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         return Math.sqrt(cand);
     }
 
-    private List<Vec3i> getNeighbors(Vec3i point) {
-        var valids = new boolean[4][4];
-        List<Vec3i> result = new ArrayList<>(8);
-        for (int i=0; i<4; ++i) {
-            for (int j=0; j<4; ++j) {
-                var pos = new BlockPos(point.getX() + i - 2, point.getY(), point.getZ() + j - 2);
-                if (canBoatInFluid(level().getFluidState(pos))) {
-                    valids[i][j] = true;
-                }
-            }
-        }
-        for (int i=1; i<4; ++i) {
-            for (int j=1; j<4; ++j) {
-                if (i == 2 && j == 2) {
-                    continue;
-                }
-                if (valids[i][j] && valids[i-1][j-1] && valids[i-1][j] && valids[i][j-1]) {
-                    result.add(new Vec3i(point.getX() + i - 2, point.getY(), point.getZ() + j - 2));
-                }
+    private boolean posValid(BlockPos pos, Object2BooleanMap<BlockPos> cache) {
+        return cache.computeIfAbsent(pos,
+                k -> canBoatInFluid(level().getFluidState(pos)) && level().getBlockState(pos.above()).isAir());
+    }
+
+    private boolean nodeValid(Vec3i point, Object2BooleanMap<BlockPos> cache) {
+        return BlockPos.betweenClosedStream(
+                new BlockPos(point.getX() - 1, point.getY(), point.getZ() - 1),
+                new BlockPos(point.getX() + 1, point.getY(), point.getZ())
+        ).allMatch(pos -> posValid(pos, cache));
+    }
+
+    private List<Vec3i> getNeighbors(Vec3i point, Object2BooleanMap<BlockPos> cache) {
+        List<Vec3i> result = new ArrayList<>(4);
+
+        for (var direction: Direction.Plane.HORIZONTAL) {
+            var cand = point.relative(direction);
+            if (nodeValid(cand, cache)) {
+                result.add(cand);
             }
         }
         return result;
+    }
+
+    private boolean hasLOS(Vec3i pointA, Vec3i pointB, Object2BooleanMap<BlockPos> cache) {
+        int deltaX = Math.abs(pointB.getX() - pointA.getX());
+        int deltaZ = -Math.abs(pointB.getZ() - pointA.getZ());
+        int sgnX = pointA.getX() < pointB.getX() ? 1 : -1;
+        int sgnZ = pointA.getZ() < pointB.getZ() ? 1 : -1;
+        int e = deltaX + deltaZ;
+        int x = pointA.getX(), z = pointA.getZ();
+
+        for (;;) {
+            if (!nodeValid(new Vec3i(x, pointA.getY(), z), cache)) {
+                return false;
+            }
+
+            if (x == pointB.getX() && z == pointB.getZ()) {
+                break;
+            }
+
+            if (2*e >= deltaZ) {
+                if (x == pointB.getX()) {
+                    break;
+                }
+                e += deltaZ;
+                x += sgnX;
+            }
+
+            if (2*e <= deltaX) {
+                if (z == pointB.getZ()) {
+                    break;
+                }
+                e += deltaX;
+                z += sgnZ;
+            }
+        }
+        return true;
     }
 
     private List<Vec3i> pathfindToDockAABB(Vec3i start, Vec3i minGoal, Vec3i maxGoal) {
@@ -400,6 +442,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
             return ImmutableList.of();
         }
 
+        Object2BooleanMap<BlockPos> posCache = new Object2BooleanOpenHashMap<>();
         Object2DoubleMap<Vec3i> dists = new Object2DoubleOpenHashMap<>();
         Object2ObjectMap<Vec3i, Vec3i> parents = new Object2ObjectOpenHashMap<>();
         PriorityQueue<PathfindPQEntry> pq = new ObjectHeapPriorityQueue<>();
@@ -423,12 +466,13 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
                 }
                 return result;
             }
-            var curDist = dists.getDouble(entry.point);
-            for (var cand: getNeighbors(entry.point)) {
-                var candDist = curDist + Math.sqrt(entry.point.distSqr(cand));
+            for (var cand: getNeighbors(entry.point, posCache)) {
+                var parent = parents.get(entry.point);
+                var candParent = parent != null && hasLOS(parent, cand, posCache) ? parent : entry.point;
+                var candDist = dists.getDouble(candParent) + Math.sqrt(candParent.distSqr(cand));
                 if (dists.getOrDefault(cand, Double.POSITIVE_INFINITY) > candDist) {
                     dists.put(cand, candDist);
-                    parents.put(cand, entry.point);
+                    parents.put(cand, candParent);
                     pq.enqueue(new PathfindPQEntry(candDist + calcHeuristic(cand, minGoal, maxGoal), cand));
                 }
             }
@@ -438,12 +482,13 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     }
 
     private Vec3i positionForPathfinding() {
-        return new Vec3i((int)Math.round(getX()), (int)Math.floor(getY() - 0.3), (int)Math.round(getZ()));
+        return new BlockPos((int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ()));
     }
 
-    private Optional<Vec3i> targetLocation() {
+    private Optional<Vec3> targetLocation() {
         if (path.size() >= 2) {
-            return Optional.of(path.get(path.size() - 2));
+            var intVec = path.get(path.size() - 2);
+            return Optional.of(new Vec3(intVec.getX() + 0.5, intVec.getY(), intVec.getZ() + 0.5));
         }
         return Optional.empty();
     }

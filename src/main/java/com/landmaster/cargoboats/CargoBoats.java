@@ -6,6 +6,7 @@ import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
+import com.landmaster.cargoboats.network.SetAutomationPacket;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -30,6 +31,7 @@ import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.*;
 import org.slf4j.Logger;
 
@@ -67,6 +69,7 @@ public class CargoBoats {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
 
     public static final Supplier<SoundEvent> MOTORBOAT_SOUND = SOUND_EVENTS.register("motorboat", SoundEvent::createVariableRangeEvent);
+    public static final Supplier<SoundEvent> BOAT_HORN_SOUND = SOUND_EVENTS.register("boat_horn", SoundEvent::createVariableRangeEvent);
 
     public static final Supplier<EntityDataSerializer<MotorboatSchedule>> MOTORBOAT_SCHEDULE_EDS = ENTITY_DATA_SERIALIZERS.register("motorboat_schedule",
             () -> EntityDataSerializer.forValueType(MotorboatSchedule.STREAM_CODEC));
@@ -139,4 +142,9 @@ public class CargoBoats {
         event.modify(MOTORBOAT_PROGRAMMER, builder -> builder.set(MOTORBOAT_SCHEDULE.get(), MotorboatSchedule.INITIAL));
     }
 
+    @SubscribeEvent
+    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        var registrar = event.registrar("1");
+        registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
+    }
 }

@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 
 public class MotorboatMenu extends AbstractContainerMenu {
     public final Container container;
-    public final ContainerData containerData;
 
     public MotorboatMenu(int containerId, Inventory playerInventory) {
         this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new SimpleContainer(36), new SimpleContainerData(2));
@@ -45,7 +44,6 @@ public class MotorboatMenu extends AbstractContainerMenu {
         }
 
         addDataSlots(containerData);
-        this.containerData = containerData;
     }
 
     @Nonnull

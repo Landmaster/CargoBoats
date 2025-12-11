@@ -7,5 +7,13 @@
         "attenuation_distance": 32
       }
     ]
+  },
+  "boat_horn": {
+    "sounds": [
+      {
+        "name": "cargoboats:boat_horn",
+        "attenuation_distance": 40
+      }
+    ]
   }
 }

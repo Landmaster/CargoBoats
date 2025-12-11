@@ -5,7 +5,6 @@ import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.block.DockBlock;
 import com.landmaster.cargoboats.entity.Motorboat;
 import it.unimi.dsi.fastutil.Pair;
-import it.unimi.dsi.fastutil.objects.ObjectObjectImmutablePair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
@@ -54,8 +53,8 @@ public class DockBlockEntity extends BlockEntity {
     public AABB getMotorboatAABB() {
         var pair = getBoxForMotorboatPathfinding();
         return AABB.encapsulatingFullBlocks(
-                new BlockPos(pair.first()).offset(0, 1, 0),
-                new BlockPos(pair.second()).offset(-1, 0, -1)
+                new BlockPos(pair.first()),
+                new BlockPos(pair.second())
         );
     }
 
@@ -64,10 +63,10 @@ public class DockBlockEntity extends BlockEntity {
         var ccwDir = facingDir.getCounterClockWise();
         var pos = this.getBlockPos();
         var pos1 = pos.relative(facingDir).relative(ccwDir).below();
-        var pos2 = pos.relative(facingDir, 3).relative(ccwDir, -1).above();
-        return new ObjectObjectImmutablePair<>(
-                new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()) - 1, Math.min(pos1.getZ(), pos2.getZ())),
-                new BlockPos(Math.max(pos1.getX(), pos2.getX()) + 1, Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()) + 1)
+        var pos2 = pos.relative(facingDir, 4).relative(ccwDir, -1).above();
+        return Pair.of(
+                new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ())),
+                new BlockPos(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()))
         );
     }
 
