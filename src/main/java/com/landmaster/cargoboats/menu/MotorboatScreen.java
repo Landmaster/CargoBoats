@@ -26,11 +26,11 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        var entity = Minecraft.getInstance().level.getEntity(menu.motorboatId.get());
+        var entity = Minecraft.getInstance().level.getEntity(menu.containerData.get(0));
         if (entity instanceof Motorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
                 guiGraphics.drawString(font, Component.translatable("gui.cargoboats.next_stop", entry.dock().toShortString()),
-                        i + 65, j + 6, 0xFF000000, false);
+                        i + 5, j + 34, 0xFF000000, false);
             });
             ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, i + 5, j + 16, mouseX, mouseY, font);
         }
@@ -42,7 +42,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
         guiGraphics.blit(CONTAINER_BACKGROUND, i, j, 0, 0, this.imageWidth, this.imageHeight);
-        var entity = Minecraft.getInstance().level.getEntity(menu.motorboatId.get());
+        var entity = Minecraft.getInstance().level.getEntity(menu.containerData.get(0));
         if (entity instanceof Motorboat motorboat) {
             ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, i + 5, j + 16);
         }

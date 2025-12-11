@@ -6,43 +6,31 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.DataSlot;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 
 public class MotorboatMenu extends AbstractContainerMenu {
     public final Container container;
-    public final DataSlot motorboatId;
+    public final ContainerData containerData;
 
     public MotorboatMenu(int containerId, Inventory playerInventory) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new SimpleContainer(45), DataSlot.standalone());
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new SimpleContainer(36), new SimpleContainerData(2));
     }
 
     public MotorboatMenu(int containerId, Inventory playerInventory, Motorboat motorboat) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat, new DataSlot() {
-            @Override
-            public int get() {
-                return motorboat.getId();
-            }
-
-            @Override
-            public void set(int i) {
-            }
-        });
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat, motorboat.containerData);
     }
 
-    public MotorboatMenu(MenuType<?> type, int containerId, Inventory playerInventory, Container container, DataSlot motorboatId) {
+    public MotorboatMenu(MenuType<?> type, int containerId, Inventory playerInventory, Container container, ContainerData containerData) {
         super(type, containerId);
 
         this.container = container;
 
-        for (int row=0; row<5; ++row) {
+        for (int row=0; row<container.getContainerSize()/9; ++row) {
             for (int col=0; col<9; ++col) {
-                addSlot(new Slot(container, row * 9 + col, 8 + col*18, 36 + row*18));
+                addSlot(new Slot(container, row * 9 + col, 8 + col*18, 54 + row*18));
             }
         }
 
@@ -56,8 +44,8 @@ public class MotorboatMenu extends AbstractContainerMenu {
             addSlot(new Slot(playerInventory, col, 8 + col*18, 197));
         }
 
-        addDataSlot(motorboatId);
-        this.motorboatId = motorboatId;
+        addDataSlots(containerData);
+        this.containerData = containerData;
     }
 
     @Nonnull
@@ -69,10 +57,10 @@ public class MotorboatMenu extends AbstractContainerMenu {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
             if (index < 45) {
-                if (!this.moveItemStackTo(itemstack1, 45, this.slots.size(), true)) {
+                if (!this.moveItemStackTo(itemstack1, container.getContainerSize(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(itemstack1, 0, 45, false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 0, container.getContainerSize(), false)) {
                 return ItemStack.EMPTY;
             }
 

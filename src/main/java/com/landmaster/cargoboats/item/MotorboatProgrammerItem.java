@@ -21,6 +21,10 @@ public class MotorboatProgrammerItem extends Item {
         super(properties);
     }
 
+    public int maxEntriesAllowed(ItemStack stack) {
+        return 20;
+    }
+
     @Nonnull
     @Override
     public InteractionResult onItemUseFirst(@Nonnull ItemStack stack, @Nonnull UseOnContext context) {
@@ -28,11 +32,13 @@ public class MotorboatProgrammerItem extends Item {
         var level = context.getLevel();
         if (level.getBlockEntity(pos) instanceof DockBlockEntity) {
             var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
-            if (schedule.entries().size() < 5 && (schedule.entries().isEmpty() || schedule.dimension() == level.dimension())) {
+            if (schedule.entries().size() < maxEntriesAllowed(stack)) {
                 stack.set(CargoBoats.MOTORBOAT_SCHEDULE,
                         new MotorboatSchedule(
-                                Stream.concat(schedule.entries().stream(), Stream.of(new MotorboatSchedule.Entry(pos, 200))).collect(Collectors.toList()),
-                                level.dimension()
+                                Stream.concat(
+                                        schedule.entries().stream(),
+                                        Stream.of(new MotorboatSchedule.Entry(pos, 200, level.dimension()))
+                                ).collect(Collectors.toList())
                         )
                 );
                 if (level.isClientSide && context.getPlayer() != null) {
@@ -51,11 +57,9 @@ public class MotorboatProgrammerItem extends Item {
         for (int i=0; i<4; ++i) {
             tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
         }
-        if (!schedule.entries().isEmpty()) {
-            tooltipComponents.add(Component.literal(schedule.dimension().location().toString()).withStyle(ChatFormatting.DARK_GREEN));
-        }
         for (var entry: schedule.entries()) {
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_schedule", entry.dock().toShortString(), entry.stopTime())
+            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_schedule",
+                            entry.dock().toShortString(), entry.dimension().location().toString(), entry.stopTime())
                     .withStyle(ChatFormatting.YELLOW));
         }
     }

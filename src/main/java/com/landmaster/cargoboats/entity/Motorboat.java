@@ -2,6 +2,7 @@ package com.landmaster.cargoboats.entity;
 
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.Config;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -60,10 +62,34 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     private static final EntityDataAccessor<Integer> ENERGY = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.INT);
     private List<Vec3i> path = ImmutableList.of();
     private int dockTime = 0;
+    private boolean automationEnabled = true;
+
+    public final ContainerData containerData = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> getId();
+                case 1 -> automationEnabled ? 1 : 0;
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            if (index == 1) {
+                automationEnabled = value != 0;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+    };
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
         super(entityType, level);
-        this.itemStacks = NonNullList.withSize(45, ItemStack.EMPTY);
+        this.itemStacks = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
     }
 
     public Motorboat(Level level, double x, double y, double z) {
@@ -90,6 +116,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         getEntityData().set(MOTORBOAT_SCHEDULE, MotorboatSchedule.CODEC.parse(NbtOps.INSTANCE, compound.get("MotorboatSchedule")).getOrThrow());
         getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
         dockTime = compound.getInt("DockTime");
+        automationEnabled = compound.getBoolean("AutomationEnabled");
     }
 
     @Override
@@ -99,6 +126,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         compound.put("MotorboatSchedule", MotorboatSchedule.CODEC.encodeStart(NbtOps.INSTANCE, getMotorboatSchedule()).getOrThrow());
         compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
         compound.putInt("DockTime", dockTime);
+        compound.putBoolean("AutomationEnabled", automationEnabled);
     }
 
     public MotorboatSchedule getMotorboatSchedule() {
@@ -107,7 +135,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
     @Override
     public int getContainerSize() {
-        return 45;
+        return 36;
     }
 
     @Nonnull
@@ -136,7 +164,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     }
 
     public int energyConsumption() {
-        return 5;
+        return Config.MOTORBOAT_BASE_ENERGY_USAGE.getAsInt();
     }
 
     @Override
@@ -145,15 +173,15 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
         var motorboatSchedule = getMotorboatSchedule();
 
-        int nextStopIdx = getEntityData().get(NEXT_STOP_INDEX);
+        final int nextStopIdx = getEntityData().get(NEXT_STOP_INDEX);
 
         if (!rotorAnimationState.isStarted()) {
             rotorAnimationState.start(tickCount);
         }
 
-        if (!level().isClientSide) {
+        if (!level().isClientSide && automationEnabled) {
             if (!motorboatSchedule.entries().isEmpty()
-                    && motorboatSchedule.dimension() == level().dimension()
+                    && nextStop().get().dimension() == level().dimension()
                     && level().getBlockEntity(motorboatSchedule.entries().get(nextStopIdx).dock()) instanceof DockBlockEntity dockBlockEntity) {
                 if (path.isEmpty() || level().getGameTime() % 40 == 0) {
                     var pair = dockBlockEntity.getBoxForMotorboatPathfinding();
@@ -173,7 +201,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
             } else {
                 path = ImmutableList.of();
                 dockTime = 0;
-                nextStopIdx = 0;
+                getEntityData().set(NEXT_STOP_INDEX, 0);
             }
         }
 
@@ -209,7 +237,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
                 this.controlBoat();
             }
 
-            if (!level().isClientSide) {
+            if (!level().isClientSide && automationEnabled) {
                 targetLocation().ifPresent(vec -> {
                     var deltaVector = Vec3.atLowerCornerOf(vec).subtract(position());
                     int energyConsumption = energyConsumption();

@@ -41,8 +41,8 @@ public class DockBlockEntity extends BlockEntity {
                 }
             } else if (!(
                     dockBlockEntity.dockedMotorboat != null
-                    && serverLevel.getEntity(dockBlockEntity.dockedMotorboatId) == dockBlockEntity.dockedMotorboat
-                    && dockBlockEntity.dockedMotorboat.getBoundingBox().intersects(dockBlockEntity.getMotorboatAABB())
+                            && serverLevel.getEntity(dockBlockEntity.dockedMotorboatId) == dockBlockEntity.dockedMotorboat
+                            && dockBlockEntity.dockedMotorboat.getBoundingBox().intersects(dockBlockEntity.getMotorboatAABB())
             )) {
                 dockBlockEntity.dockedMotorboatId = null;
                 dockBlockEntity.dockedMotorboat = null;
@@ -79,8 +79,16 @@ public class DockBlockEntity extends BlockEntity {
     }
 
     public Optional<Motorboat> getMotorboatToDock() {
-        return getMotorboatCandidates().stream()
-                .findFirst();
+        var cands = getMotorboatCandidates();
+        if (cands.isEmpty()) {
+            return Optional.empty();
+        }
+        for (var cand: cands) {
+            if (cand.nextStop().filter(entry -> entry.matchesDock(getBlockPos(), level)).isPresent()) {
+                return Optional.of(cand);
+            }
+        }
+        return Optional.of(cands.getFirst());
     }
 
     public Optional<Motorboat> getDockedMotorboat() {
