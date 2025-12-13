@@ -12,11 +12,12 @@
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.next_stop": "Next stop: %s",
   "gui.cargoboats.automation_button": "Enable/Disable Automation",
+  "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
 
   "message.cargoboats.dock_added": "Dock added to schedule: %s",
   "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",
 
-  "tooltip.cargoboats.motorboat_schedule": "Stop at dock %s in %s for %d ticks",
+  "tooltip.cargoboats.motorboat_schedule": "Stop: %s @ %s (%d ticks)",
   "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock to add it to a schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",

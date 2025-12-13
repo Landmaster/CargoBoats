@@ -23,7 +23,7 @@ public record MotorboatSchedule(List<Entry> entries) {
 
     public static final MotorboatSchedule INITIAL = new MotorboatSchedule(ImmutableList.of());
 
-    public record Entry(BlockPos dock, Integer stopTime, ResourceKey<Level> dimension) {
+    public record Entry(BlockPos dock, int stopTime, ResourceKey<Level> dimension) {
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance ->
                 instance.group(
                         BlockPos.CODEC.fieldOf("dock").forGetter(Entry::dock),

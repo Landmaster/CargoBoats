@@ -2,14 +2,17 @@ package com.landmaster.cargoboats.item;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
+import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -21,6 +24,12 @@ public class MotorboatProgrammerItem extends Item {
         super(properties);
     }
 
+    public ItemStack withSchedule(MotorboatSchedule schedule) {
+        var res = new ItemStack(this);
+        res.set(CargoBoats.MOTORBOAT_SCHEDULE, schedule);
+        return res;
+    }
+
     public int maxEntriesAllowed(ItemStack stack) {
         return 20;
     }
@@ -30,6 +39,7 @@ public class MotorboatProgrammerItem extends Item {
     public InteractionResult onItemUseFirst(@Nonnull ItemStack stack, @Nonnull UseOnContext context) {
         var pos = context.getClickedPos();
         var level = context.getLevel();
+        var player = context.getPlayer();
         if (level.getBlockEntity(pos) instanceof DockBlockEntity) {
             var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
             if (schedule.entries().size() < maxEntriesAllowed(stack)) {
@@ -41,14 +51,24 @@ public class MotorboatProgrammerItem extends Item {
                                 ).collect(Collectors.toList())
                         )
                 );
-                if (level.isClientSide && context.getPlayer() != null) {
-                    context.getPlayer().displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
+                if (level.isClientSide && player != null) {
+                    player.displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
                 }
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.FAIL;
         }
         return super.onItemUseFirst(stack, context);
+    }
+
+    @Nonnull
+    @Override
+    public InteractionResultHolder<ItemStack> use(@Nonnull Level level, @Nonnull Player player, @Nonnull InteractionHand usedHand) {
+        var stack = player.getItemInHand(usedHand);
+        return player.openMenu(
+                new SimpleMenuProvider((id, inv, thePlayer) -> new MotorboatProgrammerMenu(id, stack), stack.getHoverName()),
+                buf -> MotorboatSchedule.STREAM_CODEC.encode(buf, stack.get(CargoBoats.MOTORBOAT_SCHEDULE))
+        ).isPresent() ? InteractionResultHolder.success(stack) : InteractionResultHolder.fail(stack);
     }
 
     @Override

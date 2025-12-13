@@ -6,6 +6,8 @@ import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
+import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
+import com.landmaster.cargoboats.network.ModifySchedulePacket;
 import com.landmaster.cargoboats.network.SetAutomationPacket;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.core.component.DataComponentType;
@@ -26,6 +28,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.energy.EmptyEnergyStorage;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
@@ -101,6 +104,7 @@ public class CargoBoats {
             }).build());
 
     public static final Supplier<MenuType<MotorboatMenu>> MOTORBOAT_MENU = MENU_TYPES.register("motorboat", () -> new MenuType<>(MotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final Supplier<MenuType<MotorboatProgrammerMenu>> MOTORBOAT_PROGRAMMER_MENU = MENU_TYPES.register("motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
@@ -146,5 +150,6 @@ public class CargoBoats {
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
+        registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
     }
 }

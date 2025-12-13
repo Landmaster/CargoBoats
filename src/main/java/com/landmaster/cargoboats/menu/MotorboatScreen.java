@@ -36,15 +36,13 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
     @Override
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        int i = (this.width - this.imageWidth) / 2;
-        int j = (this.height - this.imageHeight) / 2;
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
                 guiGraphics.drawString(font, Component.translatable("gui.cargoboats.next_stop", entry.dock().toShortString()),
-                        i + 5, j + 34, 0xFF000000, false);
+                        leftPos + 8, topPos + 34, 0xFF000000, false);
             });
-            ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, i + 5, j + 16, mouseX, mouseY, font);
+            ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
         }
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
@@ -81,16 +79,13 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        int i = (this.width - this.imageWidth) / 2;
-        int j = (this.height - this.imageHeight) / 2;
-
         // main background
-        guiGraphics.blit(CONTAINER_BACKGROUND, i, j, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
 
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             // energy
-            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, i + 5, j + 16);
+            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 5, topPos + 16);
         }
     }
 }
