@@ -13,7 +13,7 @@
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.next_stop": "Next stop: %s",
-  "gui.cargoboats.automation_button": "Enable/Disable Automation",
+  "gui.cargoboats.automation_button": "Enable/Disable Movement Automation",
   "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
@@ -24,6 +24,6 @@
   "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.3": "Schedule can have up to %d destinations",
-  "tooltip.cargoboats.automation_enabled": "Automation Enabled",
-  "tooltip.cargoboats.automation_disabled": "Automation Disabled"
+  "tooltip.cargoboats.automation_enabled": "Movement Automation Enabled",
+  "tooltip.cargoboats.automation_disabled": "Movement Automation Disabled"
 }

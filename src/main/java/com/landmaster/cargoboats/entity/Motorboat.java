@@ -21,6 +21,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -33,6 +34,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -154,12 +156,27 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     }
 
+    @Override
+    public void destroy(@Nonnull Item dropItem) {
+        super.destroy(dropItem);
+        if (level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            for (int i = 0; i < itemHandler.getSlots(); ++i) {
+                Containers.dropItemStack(level(), getX(), getY(), getZ(), itemHandler.getStackInSlot(i));
+            }
+        }
+    }
     public int energyConsumption() {
         return Config.MOTORBOAT_BASE_ENERGY_USAGE.getAsInt();
     }
 
     @Override
     public void remove(@Nonnull RemovalReason reason) {
+        if (!this.level().isClientSide && reason.shouldDestroy()) {
+            for (int i = 0; i < itemHandler.getSlots(); ++i) {
+                Containers.dropItemStack(level(), getX(), getY(), getZ(), itemHandler.getStackInSlot(i));
+            }
+        }
+
         super.remove(reason);
 
         if (level() instanceof ServerLevel level) {
