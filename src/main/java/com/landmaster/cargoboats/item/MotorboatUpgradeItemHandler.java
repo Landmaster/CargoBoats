@@ -15,7 +15,15 @@ public class MotorboatUpgradeItemHandler extends ItemStackHandler {
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
-        return stack.getItem() instanceof MotorboatUpgrade;
+        if (!(stack.getItem() instanceof MotorboatUpgrade)) {
+            return false;
+        }
+        for (int i=0; i<stacks.size(); ++i) {
+            if (i != slot && stacks.get(i).getItem() == stack.getItem()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

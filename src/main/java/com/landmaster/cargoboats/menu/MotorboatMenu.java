@@ -85,7 +85,8 @@ public class MotorboatMenu extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(itemstack1, itemHandler.getSlots(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(itemstack1, 0, itemHandler.getSlots(), false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 0,
+                    itemstack1.getItem() instanceof MotorboatUpgrade ? Motorboat.NUM_UPGRADES : itemHandler.getSlots(), false)) {
                 return ItemStack.EMPTY;
             }
 
