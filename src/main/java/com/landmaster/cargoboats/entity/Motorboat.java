@@ -35,6 +35,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -205,7 +206,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                 var pos = motorboatSchedule.entries().get(nextStopIdx).dock();
                 var cap = level().getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
                 if (cap != null) {
-                    if (path.isEmpty() || level().getGameTime() % 40 == 0) {
+                    if (path.isEmpty() || level().getGameTime() % 20 == 0) {
                         var pair = cap.getBoxForMotorboatPathfinding();
                         path = pathfindToDockAABB(
                                 positionForPathfinding(),
@@ -430,7 +431,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     private boolean posValid(BlockPos pos, Object2BooleanMap<BlockPos> cache) {
-        return cache.computeIfAbsent(pos,
+        return cache.computeIfAbsent(pos.immutable(),
                 k -> canBoatInFluid(level().getFluidState(pos)) && level().getBlockState(pos.above()).getCollisionShape(level(), pos).isEmpty());
     }
 
@@ -501,6 +502,18 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         dists.put(start, 0.0);
         pq.enqueue(new PathfindPQEntry(calcHeuristic(start, minGoal, maxGoal), start));
+
+        for (var otherMotorboat: level().getEntitiesOfClass(Motorboat.class, AABB.encapsulatingFullBlocks(
+                new BlockPos(start.getX() - 5, start.getY(), start.getZ() - 5), new BlockPos(start.getX() + 5, start.getY(), start.getZ() + 5))
+        )) {
+            if (otherMotorboat != this) {
+                BlockPos.betweenClosedStream(otherMotorboat.getBoundingBox()).forEach(pos -> {
+                    if (pos.getY() == start.getY()) {
+                        posCache.put(pos.immutable(), false);
+                    }
+                });
+            }
+        }
 
         while (!pq.isEmpty()) {
             var entry = pq.dequeue();

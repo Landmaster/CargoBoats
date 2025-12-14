@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "tag": "minecraft:campfires"
+    },
+    "i": {
+      "tag": "c:ingots/iron"
+    }
+  },
+  "pattern": [
+    "c",
+    "i",
+    "i"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:buoy"
+  }
+}
