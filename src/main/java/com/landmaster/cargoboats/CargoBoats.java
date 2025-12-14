@@ -39,6 +39,8 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
+import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.energy.EmptyEnergyStorage;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
@@ -133,6 +135,8 @@ public class CargoBoats {
             ResourceLocation.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class
     );
 
+    public static final TicketController TICKET_CONTROLLER = new TicketController(ResourceLocation.fromNamespaceAndPath(MODID, "ticket_controller"));
+
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public CargoBoats(IEventBus modEventBus, ModContainer modContainer) {
@@ -178,5 +182,10 @@ public class CargoBoats {
         var registrar = event.registrar("1");
         registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
         registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
+    }
+
+    @SubscribeEvent
+    private static void registerTicketControllers(RegisterTicketControllersEvent event) {
+        event.register(TICKET_CONTROLLER);
     }
 }

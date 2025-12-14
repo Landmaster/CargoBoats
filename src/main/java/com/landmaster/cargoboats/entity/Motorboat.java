@@ -3,11 +3,12 @@ package com.landmaster.cargoboats.entity;
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
-import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import it.unimi.dsi.fastutil.PriorityQueue;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -20,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
@@ -32,6 +34,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
@@ -64,6 +67,8 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     private List<Vec3i> path = ImmutableList.of();
     private int dockTime = 0;
     public boolean automationEnabled = true;
+    private ChunkPos lastChunk;
+    private final LongSet chunkSet = new LongOpenHashSet();
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -166,7 +171,37 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     }
 
     @Override
+    public void remove(@Nonnull RemovalReason reason) {
+        super.remove(reason);
+
+        if (level() instanceof ServerLevel level) {
+            for (long chunkPos: chunkSet) {
+                CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, (int)chunkPos, (int)(chunkPos >> 32), false, false);
+            }
+        }
+    }
+
+    @Override
     public void tick() {
+        if (level() instanceof ServerLevel level && !this.chunkPosition().equals(lastChunk)) {
+            var newChunkSet = new LongOpenHashSet();
+            for (int i=-1; i<=1; ++i) {
+                for (int j=-1; j<=1; ++j) {
+                    var chunkPos = new ChunkPos(chunkPosition().x + i, chunkPosition().z + j);
+                    newChunkSet.add(chunkPos.toLong());
+                    CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, chunkPos.x, chunkPos.z, true, false);
+                }
+            }
+            if (chunkSet.removeAll(newChunkSet)) {
+                for (long chunkPos: chunkSet) {
+                    CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, (int)chunkPos, (int)(chunkPos >> 32), false, false);
+                }
+            }
+            chunkSet.clear();
+            chunkSet.addAll(newChunkSet);
+            lastChunk = chunkPosition();
+        }
+
         var motorActive = new MutableBoolean(false);
 
         var motorboatSchedule = getMotorboatSchedule();
