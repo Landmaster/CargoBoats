@@ -47,12 +47,12 @@ public class LevelRendering {
         }
     }
 
-    private static final Method getEntitesMeth;
+    private static final Method getEntitiesMeth;
 
     static {
         try {
-            getEntitesMeth = Level.class.getDeclaredMethod("getEntities");
-            getEntitesMeth.setAccessible(true);
+            getEntitiesMeth = Level.class.getDeclaredMethod("getEntities");
+            getEntitiesMeth.setAccessible(true);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +69,7 @@ public class LevelRendering {
                         .filter(Objects::nonNull)
                         .map(uuid -> {
                             try {
-                                return ((LevelEntityGetter<Entity>)getEntitesMeth.invoke(player.level())).get(uuid);
+                                return ((LevelEntityGetter<Entity>) getEntitiesMeth.invoke(player.level())).get(uuid);
                             } catch (IllegalAccessException | InvocationTargetException e) {
                                 throw new RuntimeException(e);
                             }

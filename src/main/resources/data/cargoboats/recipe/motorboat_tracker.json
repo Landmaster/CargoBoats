@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "l": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "r": {
+      "tag": "c:dusts/redstone"
+    },
+    "p": {
+      "item": "minecraft:compass"
+    }
+  },
+  "pattern": [
+    " l ",
+    "rpr",
+    " l "
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:motorboat_tracker"
+  }
+}

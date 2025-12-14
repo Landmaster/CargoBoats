@@ -3,6 +3,7 @@
   "category": "misc",
   "key": {
     "c": {
+      "type": "neoforge:block_tag",
       "tag": "minecraft:campfires"
     },
     "i": {
@@ -15,7 +16,7 @@
     "i"
   ],
   "result": {
-    "count": 1,
+    "count": 3,
     "id": "cargoboats:buoy"
   }
 }
