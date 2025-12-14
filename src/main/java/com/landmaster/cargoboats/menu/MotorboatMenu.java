@@ -2,8 +2,8 @@ package com.landmaster.cargoboats.menu;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.entity.Motorboat;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
+import com.landmaster.cargoboats.item.MotorboatUpgrade;
+import com.landmaster.cargoboats.item.MotorboatUpgradeItemHandler;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,11 +22,12 @@ public class MotorboatMenu extends AbstractContainerMenu {
     private @Nullable Motorboat motorboat = null;
 
     public MotorboatMenu(int containerId, Inventory playerInventory) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new ItemStackHandler(36), new SimpleContainerData(2));
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory,
+                new CombinedInvWrapper(new MotorboatUpgradeItemHandler(Motorboat.NUM_UPGRADES), new ItemStackHandler(27 )), new SimpleContainerData(2));
     }
 
     public MotorboatMenu(int containerId, Inventory playerInventory, Motorboat motorboat) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat.itemHandler, motorboat.containerData);
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat.combinedHandler, motorboat.containerData);
         this.motorboat = motorboat;
     }
 
@@ -34,9 +36,22 @@ public class MotorboatMenu extends AbstractContainerMenu {
 
         this.itemHandler = itemHandler;
 
-        for (int row=0; row<itemHandler.getSlots()/9; ++row) {
+        for (int i=0; i<Motorboat.NUM_UPGRADES; ++i) {
+            addSlot(new SlotItemHandler(itemHandler, i, 80 + i*18, 46) {
+                @Override
+                public int getMaxStackSize(ItemStack stack) {
+                    int limit = super.getMaxStackSize(stack);
+                    if (stack.getItem() instanceof MotorboatUpgrade upgrade) {
+                        limit = Math.min(limit, upgrade.maxUpgradeAmount());
+                    }
+                    return limit;
+                }
+            });
+        }
+
+        for (int row=0; row<3; ++row) {
             for (int col=0; col<9; ++col) {
-                addSlot(new SlotItemHandler(itemHandler, row * 9 + col, 8 + col*18, 54 + row*18));
+                addSlot(new SlotItemHandler(itemHandler, Motorboat.NUM_UPGRADES + row * 9 + col, 8 + col*18, 72 + row*18));
             }
         }
 
@@ -66,7 +81,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
         if (slot.hasItem()) {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
-            if (index < 45) {
+            if (index < itemHandler.getSlots()) {
                 if (!this.moveItemStackTo(itemstack1, itemHandler.getSlots(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }

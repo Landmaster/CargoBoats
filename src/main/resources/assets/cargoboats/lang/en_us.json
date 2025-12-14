@@ -4,12 +4,15 @@
   "block.cargoboats.buoy": "Buoy",
   "item.cargoboats.motorboat": "Motorboat",
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
+  "item.cargoboats.speed_upgrade": "Speed Upgrade",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
   "cargoboats.configuration.section.cargoboats.common.toml": "Cargo Boats Configs",
   "cargoboats.configuration.section.cargoboats.common.toml.title": "Cargo Boats Configs",
   "cargoboats.configuration.motorboat_base_energy_usage": "Motorboat base RF / tick",
   "cargoboats.configuration.motorboat_max_search_distance": "Motorboat max search distance",
+  "cargoboats.configuration.motorboat_base_speed": "Motorboat base speed",
+  "cargoboats.configuration.motorboat_speed_upgrade_multipliers": "Speed upgrade multipliers",
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.next_stop": "Next stop: %s",

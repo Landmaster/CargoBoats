@@ -7,6 +7,7 @@ import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
+import com.landmaster.cargoboats.item.SpeedUpgradeItem;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.network.ModifySchedulePacket;
@@ -108,6 +109,7 @@ public class CargoBoats {
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat", MotorboatItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
+    public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
 
     public static final Supplier<EntityType<Motorboat>> MOTORBOAT = ENTITIES.register("motorboat",
             () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
@@ -123,6 +125,7 @@ public class CargoBoats {
                 output.accept(BUOY_ITEM);
                 output.accept(MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
+                output.accept(SPEED_UPGRADE);
             }).build());
 
     public static final Supplier<MenuType<MotorboatMenu>> MOTORBOAT_MENU = MENU_TYPES.register("motorboat", () -> new MenuType<>(MotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
@@ -157,7 +160,7 @@ public class CargoBoats {
 
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerEntity(Capabilities.ItemHandler.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
+        event.registerEntity(Capabilities.ItemHandler.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
         event.registerEntity(Capabilities.ItemHandler.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
         event.registerEntity(Capabilities.EnergyStorage.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity);
 

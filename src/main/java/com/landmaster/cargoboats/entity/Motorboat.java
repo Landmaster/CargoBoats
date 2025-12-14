@@ -3,6 +3,8 @@ package com.landmaster.cargoboats.entity;
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
+import com.landmaster.cargoboats.item.MotorboatUpgrade;
+import com.landmaster.cargoboats.item.MotorboatUpgradeItemHandler;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
@@ -40,7 +42,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javax.annotation.Nonnull;
@@ -71,7 +75,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public boolean automationEnabled = true;
     private ChunkPos lastChunk;
     private final LongSet chunkSet = new LongOpenHashSet();
-    public final ItemStackHandler itemHandler = new ItemStackHandler(36);
+    public static final int NUM_UPGRADES = 5;
+    public final ItemStackHandler upgradeHandler = new MotorboatUpgradeItemHandler(NUM_UPGRADES);
+    public final ItemStackHandler itemHandler = new ItemStackHandler(27);
+    public final IItemHandler combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -122,6 +129,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
         dockTime = compound.getInt("DockTime");
         automationEnabled = compound.getBoolean("AutomationEnabled");
+        upgradeHandler.deserializeNBT(registryAccess(), compound.getCompound("Upgrades"));
         itemHandler.deserializeNBT(registryAccess(), compound.getCompound("Inventory"));
     }
 
@@ -133,6 +141,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
         compound.putInt("DockTime", dockTime);
         compound.putBoolean("AutomationEnabled", automationEnabled);
+        compound.put("Upgrades", upgradeHandler.serializeNBT(registryAccess()));
         compound.put("Inventory", itemHandler.serializeNBT(registryAccess()));
     }
 
@@ -160,9 +169,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public void destroy(@Nonnull Item dropItem) {
         super.destroy(dropItem);
         if (level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-            for (int i = 0; i < itemHandler.getSlots(); ++i) {
-                Containers.dropItemStack(level(), getX(), getY(), getZ(), itemHandler.getStackInSlot(i));
-            }
+            dropContents();
         }
     }
     public int energyConsumption() {
@@ -172,9 +179,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public void remove(@Nonnull RemovalReason reason) {
         if (!this.level().isClientSide && reason.shouldDestroy()) {
-            for (int i = 0; i < itemHandler.getSlots(); ++i) {
-                Containers.dropItemStack(level(), getX(), getY(), getZ(), itemHandler.getStackInSlot(i));
-            }
+            dropContents();
         }
 
         super.remove(reason);
@@ -184,6 +189,28 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                 CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, (int)chunkPos, (int)(chunkPos >> 32), false, false);
             }
         }
+    }
+
+    private void dropContents() {
+        for (int i = 0; i < combinedHandler.getSlots(); ++i) {
+            Containers.dropItemStack(level(), getX(), getY(), getZ(), combinedHandler.getStackInSlot(i));
+        }
+    }
+
+    private double motorboatSpeed() {
+        double res = Config.MOTORBOAT_BASE_SPEED.getAsDouble();
+        int numSpeedUpgrades = 0;
+        for (int i=0; i<upgradeHandler.getSlots(); ++i) {
+            var stack = upgradeHandler.getStackInSlot(i);
+            if (stack.is(CargoBoats.SPEED_UPGRADE)) {
+                numSpeedUpgrades += stack.getCount();
+            }
+        }
+        if (numSpeedUpgrades > 0) {
+            var multipliers = Config.MOTORBOAT_SPEED_MULTIPLIERS.get();
+            res *= multipliers.get(Math.min(numSpeedUpgrades - 1, multipliers.size()));
+        }
+        return res;
     }
 
     @Override
@@ -269,7 +296,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             this.setDamage(this.getDamage() - 1.0F);
         }
 
-        super.tick();
+        this.baseTick();
         this.tickLerp();
         if (this.isControlledByLocalInstance()) {
             if (!(this.getFirstPassenger() instanceof Player)) {
@@ -285,12 +312,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                 targetLocation().ifPresent(vec -> {
                     var deltaVector = vec.subtract(position());
                     int energyConsumption = energyConsumption();
-                    if (deltaVector.horizontalDistance() < 0.15) {
+                    if (deltaVector.horizontalDistance() < 0.1) {
                         path.removeLast();
                     } else if (extractEnergy(energyConsumption, true) >= energyConsumption) {
                         extractEnergy(energyConsumption, false);
                         motorActive.setTrue();
-                        var scalar = 0.07 / deltaVector.horizontalDistance();
+                        var scalar = Math.min(
+                                motorboatSpeed() / deltaVector.horizontalDistance(),
+                                0.2);
                         deltaVector = new Vec3(deltaVector.x * scalar, 0, deltaVector.z * scalar);
                         setYRot((float) (Math.toDegrees(Math.atan2(deltaVector.z, deltaVector.x)) - 90));
                         this.setDeltaMovement(deltaVector);
