@@ -3,7 +3,6 @@ package com.landmaster.cargoboats.entity;
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
-import com.landmaster.cargoboats.item.MotorboatUpgrade;
 import com.landmaster.cargoboats.item.MotorboatUpgradeItemHandler;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
@@ -361,6 +360,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand) {
         var stack = player.getItemInHand(hand);
+
         if (stack.has(CargoBoats.MOTORBOAT_SCHEDULE)) {
             getEntityData().set(MOTORBOAT_SCHEDULE, stack.get(CargoBoats.MOTORBOAT_SCHEDULE));
             dockTime = 0;
@@ -368,6 +368,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             path = ImmutableList.of();
             if (level().isClientSide) {
                 player.displayClientMessage(Component.translatable("message.cargoboats.motorboat_programmed"), false);
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        if (stack.is(CargoBoats.MOTORBOAT_TRACKER)) {
+            stack.set(CargoBoats.TRACKED_MOTORBOAT, uuid);
+            if (level().isClientSide) {
+                player.displayClientMessage(Component.translatable("message.cargoboats.motorboat_tracked", uuid.toString()), false);
             }
             return InteractionResult.SUCCESS;
         }

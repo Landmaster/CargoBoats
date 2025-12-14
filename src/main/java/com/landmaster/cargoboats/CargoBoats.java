@@ -7,6 +7,7 @@ import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
+import com.landmaster.cargoboats.item.MotorboatTrackerItem;
 import com.landmaster.cargoboats.item.SpeedUpgradeItem;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
@@ -14,6 +15,7 @@ import com.landmaster.cargoboats.network.ModifySchedulePacket;
 import com.landmaster.cargoboats.network.SetAutomationPacket;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
@@ -61,6 +63,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 
+import java.util.UUID;
 import java.util.function.Supplier;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -91,6 +94,8 @@ public class CargoBoats {
 
     public static final Supplier<DataComponentType<MotorboatSchedule>> MOTORBOAT_SCHEDULE = DATA_COMPONENTS.registerComponentType("motorboat_schedule", builder ->
             builder.networkSynchronized(MotorboatSchedule.STREAM_CODEC).persistent(MotorboatSchedule.CODEC));
+    public static final Supplier<DataComponentType<UUID>> TRACKED_MOTORBOAT = DATA_COMPONENTS.registerComponentType(
+            "tracked_motorboat", builder -> builder.networkSynchronized(UUIDUtil.STREAM_CODEC).persistent(UUIDUtil.CODEC));
 
     public static final DeferredBlock<DockBlock> DOCK = BLOCKS.registerBlock("dock", DockBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS));
@@ -110,6 +115,7 @@ public class CargoBoats {
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
+    public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new);
 
     public static final Supplier<EntityType<Motorboat>> MOTORBOAT = ENTITIES.register("motorboat",
             () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
@@ -126,6 +132,7 @@ public class CargoBoats {
                 output.accept(MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
                 output.accept(SPEED_UPGRADE);
+                output.accept(MOTORBOAT_TRACKER);
             }).build());
 
     public static final Supplier<MenuType<MotorboatMenu>> MOTORBOAT_MENU = MENU_TYPES.register("motorboat", () -> new MenuType<>(MotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));

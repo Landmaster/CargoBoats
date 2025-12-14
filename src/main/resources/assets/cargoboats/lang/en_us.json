@@ -5,6 +5,7 @@
   "item.cargoboats.motorboat": "Motorboat",
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
   "item.cargoboats.speed_upgrade": "Speed Upgrade",
+  "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
   "cargoboats.configuration.section.cargoboats.common.toml": "Cargo Boats Configs",
@@ -21,6 +22,7 @@
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
   "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",
+  "message.cargoboats.motorboat_tracked": "Motorboat tracked: %s",
 
   "tooltip.cargoboats.motorboat_schedule": "Stop: %s @ %s (%d ticks)",
   "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock, buoy, etc. to add it to a schedule",
@@ -28,5 +30,6 @@
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.3": "Schedule can have up to %d destinations",
   "tooltip.cargoboats.automation_enabled": "Movement Automation Enabled",
-  "tooltip.cargoboats.automation_disabled": "Movement Automation Disabled"
+  "tooltip.cargoboats.automation_disabled": "Movement Automation Disabled",
+  "tooltip.cargoboats.tracked_motorboat": "Motorboat tracked: %s"
 }
