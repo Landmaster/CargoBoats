@@ -1,6 +1,8 @@
 package com.landmaster.cargoboats;
 
+import com.landmaster.cargoboats.block.BuoyBlock;
 import com.landmaster.cargoboats.block.DockBlock;
+import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
@@ -10,22 +12,30 @@ import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.network.ModifySchedulePacket;
 import com.landmaster.cargoboats.network.SetAutomationPacket;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
@@ -36,14 +46,13 @@ import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.*;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -82,8 +91,18 @@ public class CargoBoats {
 
     public static final DeferredBlock<DockBlock> DOCK = BLOCKS.registerBlock("dock", DockBlock::new,
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS));
+    public static final DeferredBlock<BuoyBlock> BUOY = BLOCKS.registerBlock("buoy", BuoyBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_RED)
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(0.8F)
+                    .sound(SoundType.METAL)
+                    .noCollission()
+                    .lightLevel(state -> 12)
+    );
 
     public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
+    public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat", MotorboatItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
@@ -99,6 +118,7 @@ public class CargoBoats {
             .icon(MOTORBOAT_ITEM::toStack)
             .displayItems((parameters, output) -> {
                 output.accept(DOCK_ITEM);
+                output.accept(BUOY_ITEM);
                 output.accept(MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
             }).build());
@@ -108,6 +128,10 @@ public class CargoBoats {
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
+
+    public static final BlockCapability<MotorboatPathfindingNode, Void> MOTORBOAT_PATHFINDING_NODE = BlockCapability.createVoid(
+            ResourceLocation.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class
+    );
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
@@ -139,6 +163,9 @@ public class CargoBoats {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
                 .map(motorboat -> motorboat.getCapability(Capabilities.EnergyStorage.ENTITY, null))
                 .orElse(EmptyEnergyStorage.INSTANCE));
+
+        event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, DOCK_TE.get(), (te, ctx) -> te);
+        event.registerBlock(MOTORBOAT_PATHFINDING_NODE, (level, pos, state, blockEntity, context) -> new BuoyBlock.PathfindingNode(level, pos), BUOY.get());
     }
 
     @SubscribeEvent

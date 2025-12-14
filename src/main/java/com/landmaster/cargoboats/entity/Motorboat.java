@@ -179,23 +179,28 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
         if (!level().isClientSide && automationEnabled) {
             if (!motorboatSchedule.entries().isEmpty()
-                    && nextStop().get().dimension() == level().dimension()
-                    && level().getBlockEntity(motorboatSchedule.entries().get(nextStopIdx).dock()) instanceof DockBlockEntity dockBlockEntity) {
-                if (path.isEmpty() || level().getGameTime() % 40 == 0) {
-                    var pair = dockBlockEntity.getBoxForMotorboatPathfinding();
-                    path = pathfindToDockAABB(
-                            positionForPathfinding(),
-                            pair.first(), pair.second());
-                }
-
-                if (dockBlockEntity.getDockedMotorboat().orElse(null) == this) {
-                    if (dockTime >= motorboatSchedule.entries().get(nextStopIdx).stopTime()) {
-                        getEntityData().set(NEXT_STOP_INDEX, (nextStopIdx + 1) % motorboatSchedule.entries().size());
-                        dockTime = 0;
-                        playSound(CargoBoats.BOAT_HORN_SOUND.get(), 0.5f, 0.0f);
+                    && nextStop().get().dimension() == level().dimension()) {
+                var pos = motorboatSchedule.entries().get(nextStopIdx).dock();
+                var cap = level().getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
+                if (cap != null) {
+                    if (path.isEmpty() || level().getGameTime() % 40 == 0) {
+                        var pair = cap.getBoxForMotorboatPathfinding();
+                        path = pathfindToDockAABB(
+                                positionForPathfinding(),
+                                pair.first(), pair.second());
                     }
-                    path = ImmutableList.of();
-                    ++dockTime;
+
+                    if (cap.isMotorboatDocked(this)) {
+                        if (dockTime >= motorboatSchedule.entries().get(nextStopIdx).stopTime()) {
+                            getEntityData().set(NEXT_STOP_INDEX, (nextStopIdx + 1) % motorboatSchedule.entries().size());
+                            dockTime = 0;
+                            if (cap.doBoatHorn()) {
+                                playSound(CargoBoats.BOAT_HORN_SOUND.get(), 0.5f, 0.0f);
+                            }
+                        }
+                        path = ImmutableList.of();
+                        ++dockTime;
+                    }
                 }
             } else {
                 path = ImmutableList.of();
@@ -379,7 +384,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
     private boolean posValid(BlockPos pos, Object2BooleanMap<BlockPos> cache) {
         return cache.computeIfAbsent(pos,
-                k -> canBoatInFluid(level().getFluidState(pos)) && level().getBlockState(pos.above()).isAir());
+                k -> canBoatInFluid(level().getFluidState(pos)) && level().getBlockState(pos.above()).getCollisionShape(level(), pos).isEmpty());
     }
 
     private boolean nodeValid(Vec3i point, Object2BooleanMap<BlockPos> cache) {

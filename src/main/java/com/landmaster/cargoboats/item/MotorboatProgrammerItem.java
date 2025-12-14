@@ -40,14 +40,15 @@ public class MotorboatProgrammerItem extends Item {
         var pos = context.getClickedPos();
         var level = context.getLevel();
         var player = context.getPlayer();
-        if (level.getBlockEntity(pos) instanceof DockBlockEntity) {
+        var cap = level.getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
+        if (cap != null) {
             var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
             if (schedule.entries().size() < maxEntriesAllowed(stack)) {
                 stack.set(CargoBoats.MOTORBOAT_SCHEDULE,
                         new MotorboatSchedule(
                                 Stream.concat(
                                         schedule.entries().stream(),
-                                        Stream.of(new MotorboatSchedule.Entry(pos, 200, level.dimension()))
+                                        Stream.of(new MotorboatSchedule.Entry(pos, cap.defaultStopTime(), level.dimension()))
                                 ).collect(Collectors.toList())
                         )
                 );
@@ -75,7 +76,8 @@ public class MotorboatProgrammerItem extends Item {
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
         var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
         for (int i=0; i<4; ++i) {
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
+            Object[] args = i == 3 ? new Object[] { maxEntriesAllowed(stack) } : new Object[0];
+            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i, args).withStyle(ChatFormatting.AQUA));
         }
         for (var entry: schedule.entries()) {
             tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_schedule",

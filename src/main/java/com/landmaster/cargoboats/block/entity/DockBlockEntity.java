@@ -3,6 +3,7 @@ package com.landmaster.cargoboats.block.entity;
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.block.DockBlock;
+import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.entity.Motorboat;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DockBlockEntity extends BlockEntity {
+public class DockBlockEntity extends BlockEntity implements MotorboatPathfindingNode {
     private @Nullable UUID dockedMotorboatId;
     private @Nullable Motorboat dockedMotorboat;
 
@@ -58,16 +59,32 @@ public class DockBlockEntity extends BlockEntity {
         );
     }
 
+    @Override
     public Pair<Vec3i, Vec3i> getBoxForMotorboatPathfinding() {
         var facingDir = getBlockState().getValue(DockBlock.FACING);
         var ccwDir = facingDir.getCounterClockWise();
         var pos = this.getBlockPos();
-        var pos1 = pos.relative(facingDir).relative(ccwDir).below();
-        var pos2 = pos.relative(facingDir, 4).relative(ccwDir, -1).above();
+        var pos1 = pos.relative(facingDir).relative(ccwDir).below(2);
+        var pos2 = pos.relative(facingDir, 4).relative(ccwDir, -1).above(2);
         return Pair.of(
                 new BlockPos(Math.min(pos1.getX(), pos2.getX()), Math.min(pos1.getY(), pos2.getY()), Math.min(pos1.getZ(), pos2.getZ())),
                 new BlockPos(Math.max(pos1.getX(), pos2.getX()), Math.max(pos1.getY(), pos2.getY()), Math.max(pos1.getZ(), pos2.getZ()))
         );
+    }
+
+    @Override
+    public boolean isMotorboatDocked(Motorboat motorboat) {
+        return dockedMotorboat != null && dockedMotorboat == motorboat;
+    }
+
+    @Override
+    public boolean doBoatHorn() {
+        return true;
+    }
+
+    @Override
+    public int defaultStopTime() {
+        return 200;
     }
 
     public List<Motorboat> getMotorboatCandidates() {

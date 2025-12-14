@@ -1,0 +1,51 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "0": "cargoboats:block/buoy",
+    "particle": "cargoboats:block/buoy"
+  },
+  "elements": [
+    {
+      "name": "base",
+      "from": [4, 0, 4],
+      "to": [12, 2, 12],
+      "rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 4]},
+      "faces": {
+        "north": {"uv": [8, 6, 16, 8], "texture": "#0"},
+        "east": {"uv": [8, 6, 16, 8], "texture": "#0"},
+        "south": {"uv": [8, 6, 16, 8], "texture": "#0"},
+        "west": {"uv": [8, 6, 16, 8], "texture": "#0"},
+        "up": {"uv": [8, 8, 16, 16], "texture": "#0"},
+        "down": {"uv": [8, 8, 16, 16], "texture": "#0"}
+      }
+    },
+    {
+      "name": "shaft",
+      "from": [5, 2, 5],
+      "to": [11, 12, 11],
+      "rotation": {"angle": 0, "axis": "y", "origin": [5, 2, 5]},
+      "faces": {
+        "north": {"uv": [0, 0, 6, 10], "texture": "#0"},
+        "east": {"uv": [0, 0, 6, 10], "texture": "#0"},
+        "south": {"uv": [0, 0, 6, 10], "texture": "#0"},
+        "west": {"uv": [0, 0, 6, 10], "texture": "#0"},
+        "up": {"uv": [6, 0, 12, 6], "texture": "#0"},
+        "down": {"uv": [6, 0, 12, 6], "texture": "#0"}
+      }
+    },
+    {
+      "name": "top",
+      "from": [6, 12, 6],
+      "to": [10, 14, 10],
+      "rotation": {"angle": 0, "axis": "y", "origin": [6, 12, 6]},
+      "faces": {
+        "north": {"uv": [0, 10, 4, 12], "texture": "#0"},
+        "east": {"uv": [0, 10, 4, 12], "texture": "#0"},
+        "south": {"uv": [0, 10, 4, 12], "texture": "#0"},
+        "west": {"uv": [0, 10, 4, 12], "texture": "#0"},
+        "up": {"uv": [0, 12, 4, 16], "texture": "#0"},
+        "down": {"uv": [0, 12, 4, 16], "texture": "#0"}
+      }
+    }
+  ]
+}

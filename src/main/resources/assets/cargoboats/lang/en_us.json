@@ -1,6 +1,7 @@
 {
   "itemGroup.cargoboats": "Cargo Boats",
   "block.cargoboats.dock": "Dock",
+  "block.cargoboats.buoy": "Buoy",
   "item.cargoboats.motorboat": "Motorboat",
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
 
@@ -14,14 +15,14 @@
   "gui.cargoboats.automation_button": "Enable/Disable Automation",
   "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
 
-  "message.cargoboats.dock_added": "Dock added to schedule: %s",
+  "message.cargoboats.dock_added": "Node added to schedule: %s",
   "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",
 
   "tooltip.cargoboats.motorboat_schedule": "Stop: %s @ %s (%d ticks)",
-  "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock to add it to a schedule",
+  "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock, buoy, etc. to add it to a schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
-  "tooltip.cargoboats.motorboat_programmer_instructions.3": "Schedule can have up to 20 destinations",
+  "tooltip.cargoboats.motorboat_programmer_instructions.3": "Schedule can have up to %d destinations",
   "tooltip.cargoboats.automation_enabled": "Automation Enabled",
   "tooltip.cargoboats.automation_disabled": "Automation Disabled"
 }
