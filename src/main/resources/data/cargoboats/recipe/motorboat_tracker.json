@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "l": {
-      "item": "minecraft:lapis_lazuli"
+    "y": {
+      "item": "minecraft:yellow_dye"
     },
-    "r": {
-      "tag": "c:dusts/redstone"
+    "c": {
+      "tag": "c:ingots/copper"
     },
     "p": {
       "item": "minecraft:compass"
     }
   },
   "pattern": [
-    " l ",
-    "rpr",
-    " l "
+    " c ",
+    "ypy",
+    " c "
   ],
   "result": {
     "count": 1,

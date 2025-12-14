@@ -1,17 +1,14 @@
 package com.landmaster.cargoboats.level;
 
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.network.TrackMotorboatPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -19,11 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Objects;
+import org.joml.Vector3f;
 
 @EventBusSubscriber
 public class LevelRendering {
@@ -47,49 +40,24 @@ public class LevelRendering {
         }
     }
 
-    private static final Method getEntitiesMeth;
-
-    static {
-        try {
-            getEntitiesMeth = Level.class.getDeclaredMethod("getEntities");
-            getEntitiesMeth.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
     @SubscribeEvent
     private static void onLevelRender(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) {
             if (event.getCamera().getEntity() instanceof Player player) {
-                Arrays.stream(InteractionHand.values())
-                        .map(player::getItemInHand)
-                        .map(stack -> stack.get(CargoBoats.TRACKED_MOTORBOAT))
-                        .filter(Objects::nonNull)
-                        .map(uuid -> {
-                            try {
-                                return ((LevelEntityGetter<Entity>) getEntitiesMeth.invoke(player.level())).get(uuid);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .ifPresent(motorboat -> {
-                            var consumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.lines());
-                            var poseStack = event.getPoseStack();
-                            var pose = poseStack.last();
-                            var cameraPos = event.getCamera().getPosition();
-                            var startPos = player.position().subtract(cameraPos);
-                            var endPos = motorboat.position().subtract(cameraPos);
-                            var diff = endPos.subtract(startPos);
-                            if (diff.lengthSqr() > 0.001) {
-                                var normal = diff.normalize();
-                                consumer.addVertex(pose, startPos.toVector3f()).setColor(0, 255, 0, 255).setNormal((float) normal.x, (float) normal.y, (float) normal.z);
-                                consumer.addVertex(pose, endPos.toVector3f()).setColor(0, 255, 0, 255).setNormal((float) normal.x, (float) normal.y, (float) normal.z);
-                            }
-                        });
+                if (TrackMotorboatPacket.trackedPos != null) {
+                    var consumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.lines());
+                    var poseStack = event.getPoseStack();
+                    var pose = poseStack.last();
+                    var cameraPos = event.getCamera().getPosition();
+                    var startPos = player.position().subtract(cameraPos).toVector3f();
+                    var endPos = cameraPos.toVector3f().sub(TrackMotorboatPacket.trackedPos).negate();
+                    var diff = new Vector3f(endPos).sub(startPos);
+                    if (diff.lengthSquared() > 0.001) {
+                        diff.normalize();
+                        consumer.addVertex(pose, startPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
+                        consumer.addVertex(pose, endPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
+                    }
+                }
             }
         }
     }
