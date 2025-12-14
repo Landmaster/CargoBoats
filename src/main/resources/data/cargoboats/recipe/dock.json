@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "i": {
+      "tag": "c:ingots/iron"
+    },
+    "w": {
+      "tag": "minecraft:planks"
+    },
+    "b": {
+      "tag": "minecraft:boats"
+    }
+  },
+  "pattern": [
+    "iwi",
+    "wbw",
+    "iwi"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:dock"
+  }
+}

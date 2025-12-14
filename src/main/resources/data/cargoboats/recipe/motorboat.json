@@ -11,12 +11,13 @@
     "b": {
       "tag": "c:barrels/wooden"
     },
-    "i": {
-      "tag": "c:storage_blocks/iron"
+    "B": {
+      "tag": "minecraft:boats"
     }
   },
   "pattern": [
-    "pbi",
+    " b ",
+    "pBc",
     "ccc"
   ],
   "result": {
