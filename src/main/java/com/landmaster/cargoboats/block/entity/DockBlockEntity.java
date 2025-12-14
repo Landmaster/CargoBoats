@@ -39,14 +39,26 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
                     dockBlockEntity.dockedMotorboat = boatToDock.get();
                     dockBlockEntity.invalidateCapabilities();
                 }
-            } else if (!(
-                    dockBlockEntity.dockedMotorboat != null
-                            && serverLevel.getEntity(dockBlockEntity.dockedMotorboatId) == dockBlockEntity.dockedMotorboat
-                            && dockBlockEntity.dockedMotorboat.getBoundingBox().intersects(dockBlockEntity.getMotorboatAABB())
-            )) {
-                dockBlockEntity.dockedMotorboatId = null;
-                dockBlockEntity.dockedMotorboat = null;
-                dockBlockEntity.invalidateCapabilities();
+            } else {
+                boolean invalidateCaps = false;
+                if (dockBlockEntity.dockedMotorboat == null) {
+                    var entity = serverLevel.getEntity(dockBlockEntity.dockedMotorboatId);
+                    if (entity instanceof Motorboat motorboat) {
+                        dockBlockEntity.dockedMotorboat = motorboat;
+                        invalidateCaps = true;
+                    }
+                }
+                if (dockBlockEntity.dockedMotorboat == null
+                                || serverLevel.getEntity(dockBlockEntity.dockedMotorboatId) != dockBlockEntity.dockedMotorboat
+                                || !dockBlockEntity.dockedMotorboat.getBoundingBox().intersects(dockBlockEntity.getMotorboatAABB())
+                ) {
+                    dockBlockEntity.dockedMotorboatId = null;
+                    dockBlockEntity.dockedMotorboat = null;
+                    invalidateCaps = true;
+                }
+                if (invalidateCaps) {
+                    dockBlockEntity.invalidateCapabilities();
+                }
             }
         }
     }

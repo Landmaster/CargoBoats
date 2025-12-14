@@ -8,28 +8,35 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class MotorboatMenu extends AbstractContainerMenu {
-    public final Container container;
+    private final IItemHandler itemHandler;
+    private @Nullable Motorboat motorboat = null;
 
     public MotorboatMenu(int containerId, Inventory playerInventory) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new SimpleContainer(36), new SimpleContainerData(2));
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, new ItemStackHandler(36), new SimpleContainerData(2));
     }
 
     public MotorboatMenu(int containerId, Inventory playerInventory, Motorboat motorboat) {
-        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat, motorboat.containerData);
+        this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory, motorboat.itemHandler, motorboat.containerData);
+        this.motorboat = motorboat;
     }
 
-    public MotorboatMenu(MenuType<?> type, int containerId, Inventory playerInventory, Container container, ContainerData containerData) {
+    public MotorboatMenu(MenuType<?> type, int containerId, Inventory playerInventory, IItemHandler itemHandler, ContainerData containerData) {
         super(type, containerId);
 
-        this.container = container;
+        this.itemHandler = itemHandler;
 
-        for (int row=0; row<container.getContainerSize()/9; ++row) {
+        for (int row=0; row<itemHandler.getSlots()/9; ++row) {
             for (int col=0; col<9; ++col) {
-                addSlot(new Slot(container, row * 9 + col, 8 + col*18, 54 + row*18));
+                addSlot(new SlotItemHandler(itemHandler, row * 9 + col, 8 + col*18, 54 + row*18));
             }
         }
 
@@ -46,6 +53,11 @@ public class MotorboatMenu extends AbstractContainerMenu {
         addDataSlots(containerData);
     }
 
+    public Optional<Motorboat> getMotorboat() {
+        return Optional.ofNullable(motorboat);
+    }
+
+
     @Nonnull
     @Override
     public ItemStack quickMoveStack(@Nonnull Player player, int index) {
@@ -55,10 +67,10 @@ public class MotorboatMenu extends AbstractContainerMenu {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
             if (index < 45) {
-                if (!this.moveItemStackTo(itemstack1, container.getContainerSize(), this.slots.size(), true)) {
+                if (!this.moveItemStackTo(itemstack1, itemHandler.getSlots(), this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.moveItemStackTo(itemstack1, 0, container.getContainerSize(), false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 0, itemHandler.getSlots(), false)) {
                 return ItemStack.EMPTY;
             }
 
@@ -74,6 +86,6 @@ public class MotorboatMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return container.stillValid(player);
+        return motorboat == null || player.canInteractWithEntity(motorboat, 4.0);
     }
 }

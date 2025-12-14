@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -24,21 +23,21 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javax.annotation.Nonnull;
@@ -47,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Motorboat extends ChestBoat implements IEnergyStorage {
+public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, HasCustomInventoryScreen {
     public final AnimationState rotorAnimationState = new AnimationState();
     public float rotorSpeed = 0;
 
@@ -69,6 +68,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     public boolean automationEnabled = true;
     private ChunkPos lastChunk;
     private final LongSet chunkSet = new LongOpenHashSet();
+    public final ItemStackHandler itemHandler = new ItemStackHandler(36);
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -92,7 +92,6 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
         super(entityType, level);
-        this.itemStacks = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
     }
 
     public Motorboat(Level level, double x, double y, double z) {
@@ -120,6 +119,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
         dockTime = compound.getInt("DockTime");
         automationEnabled = compound.getBoolean("AutomationEnabled");
+        itemHandler.deserializeNBT(registryAccess(), compound.getCompound("Inventory"));
     }
 
     @Override
@@ -130,15 +130,11 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
         compound.putInt("DockTime", dockTime);
         compound.putBoolean("AutomationEnabled", automationEnabled);
+        compound.put("Inventory", itemHandler.serializeNBT(registryAccess()));
     }
 
     public MotorboatSchedule getMotorboatSchedule() {
         return getEntityData().get(MOTORBOAT_SCHEDULE);
-    }
-
-    @Override
-    public int getContainerSize() {
-        return 36;
     }
 
     @Nonnull
@@ -147,21 +143,12 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
         return CargoBoats.MOTORBOAT_ITEM.asItem();
     }
 
-    @Override
-    public void openCustomInventoryScreen(Player player) {
-        player.openMenu(this);
-        if (!player.level().isClientSide) {
-            this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-        }
-    }
-
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, @Nonnull Inventory playerInventory, @Nonnull Player player) {
-        if (this.getLootTable() != null && player.isSpectator()) {
+        if (player.isSpectator()) {
             return null;
         } else {
-            this.unpackLootTable(playerInventory.player);
             return new MotorboatMenu(containerId, playerInventory, this);
         }
     }
@@ -337,7 +324,32 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
             }
             return InteractionResult.SUCCESS;
         }
-        return super.interact(player, hand);
+
+        if (!player.isSecondaryUseActive()) {
+            InteractionResult interactionresult = super.interact(player, hand);
+            if (interactionresult != InteractionResult.PASS) {
+                return interactionresult;
+            }
+        }
+
+        if (this.canAddPassenger(player) && !player.isSecondaryUseActive()) {
+            return InteractionResult.PASS;
+        } else {
+            var openMenuResult = player.openMenu(this);
+            if (openMenuResult.isPresent()) {
+                this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+            }
+
+            return openMenuResult.isPresent() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        }
+    }
+
+    @Override
+    public void openCustomInventoryScreen(Player player) {
+        var openMenuResult = player.openMenu(this);
+        if (openMenuResult.isPresent() && !level().isClientSide) {
+            this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+        }
     }
 
     private class PlayMotorboatSound {
@@ -492,7 +504,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
 
         while (!pq.isEmpty()) {
             var entry = pq.dequeue();
-            if (entry.cost > 200) {
+            if (entry.cost > Config.MOTORBOAT_MAX_SEARCH_DISTANCE.getAsDouble()) {
                 break;
             }
             if (entry.point.getX() >= minGoal.getX() && entry.point.getX() <= maxGoal.getX()

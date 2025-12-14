@@ -157,8 +157,8 @@ public class CargoBoats {
 
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerEntity(Capabilities.ItemHandler.ENTITY, MOTORBOAT.get(), (entity, ctx) -> new InvWrapper(entity));
-        event.registerEntity(Capabilities.ItemHandler.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> new InvWrapper(entity));
+        event.registerEntity(Capabilities.ItemHandler.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
+        event.registerEntity(Capabilities.ItemHandler.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
         event.registerEntity(Capabilities.EnergyStorage.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity);
 
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
