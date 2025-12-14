@@ -390,7 +390,7 @@ public class Motorboat extends ChestBoat implements IEnergyStorage {
     private boolean nodeValid(Vec3i point, Object2BooleanMap<BlockPos> cache) {
         return BlockPos.betweenClosedStream(
                 new BlockPos(point.getX() - 1, point.getY(), point.getZ() - 1),
-                new BlockPos(point.getX() + 1, point.getY(), point.getZ())
+                new BlockPos(point.getX() + 1, point.getY(), point.getZ() + 1)
         ).allMatch(pos -> posValid(pos, cache));
     }
 
