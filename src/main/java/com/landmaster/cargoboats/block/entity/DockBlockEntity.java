@@ -8,7 +8,6 @@ import com.landmaster.cargoboats.entity.Motorboat;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -66,13 +65,13 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
     public AABB getMotorboatAABB() {
         var pair = getBoxForMotorboatPathfinding();
         return AABB.encapsulatingFullBlocks(
-                new BlockPos(pair.first()),
-                new BlockPos(pair.second())
+                pair.first(),
+                pair.second()
         );
     }
 
     @Override
-    public Pair<Vec3i, Vec3i> getBoxForMotorboatPathfinding() {
+    public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
         var facingDir = getBlockState().getValue(DockBlock.FACING);
         var ccwDir = facingDir.getCounterClockWise();
         var pos = this.getBlockPos();

@@ -14,7 +14,7 @@ public class Config {
 
     public static final ModConfigSpec.DoubleValue MOTORBOAT_MAX_SEARCH_DISTANCE = BUILDER
             .comment("Maximum search distance between nodes for motorboats")
-            .defineInRange("motorboat_max_search_distance", 400.0, 0.0, 10000.0);
+            .defineInRange("motorboat_max_search_distance", 200.0, 0.0, 1000.0);
 
     public static final ModConfigSpec.DoubleValue MOTORBOAT_BASE_SPEED = BUILDER
             .comment("Base speed of motorboat in meters / tick")

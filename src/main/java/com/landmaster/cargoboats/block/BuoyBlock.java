@@ -2,7 +2,6 @@ package com.landmaster.cargoboats.block;
 
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -27,7 +26,7 @@ public class BuoyBlock extends Block {
 
     public record PathfindingNode(Level level, BlockPos pos) implements MotorboatPathfindingNode {
         @Override
-        public Pair<Vec3i, Vec3i> getBoxForMotorboatPathfinding() {
+        public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
             return Pair.of(pos.offset(-1, -1, -1), pos.offset(1, 1, 1));
         }
 

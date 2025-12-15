@@ -8,13 +8,14 @@ import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import it.unimi.dsi.fastutil.PriorityQueue;
+import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
+import it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
@@ -69,7 +70,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             EntityDataSerializers.INT
     );
     private static final EntityDataAccessor<Integer> ENERGY = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.INT);
-    private List<Vec3i> path = ImmutableList.of();
+    private List<BlockPos> path = ImmutableList.of();
     private int dockTime = 0;
     public boolean automationEnabled = true;
     private ChunkPos lastChunk;
@@ -78,6 +79,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public final ItemStackHandler upgradeHandler = new MotorboatUpgradeItemHandler(NUM_UPGRADES);
     public final ItemStackHandler itemHandler = new ItemStackHandler(27);
     public final IItemHandler combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
+    private long pathCheckTimestamp = Long.MIN_VALUE;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -243,18 +245,13 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             rotorAnimationState.start(tickCount);
         }
 
-        if (!level().isClientSide && automationEnabled) {
+        if (!level().isClientSide && automationEnabled && this.isControlledByLocalInstance()) {
             if (!motorboatSchedule.entries().isEmpty()
                     && nextStop().get().dimension() == level().dimension()) {
                 var pos = motorboatSchedule.entries().get(nextStopIdx).dock();
                 var cap = level().getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
                 if (cap != null) {
-                    if (path.isEmpty() || level().getGameTime() % 20 == 0) {
-                        var pair = cap.getBoxForMotorboatPathfinding();
-                        path = pathfindToDockAABB(
-                                positionForPathfinding(),
-                                pair.first(), pair.second());
-                    }
+                    long gameTime = level().getGameTime();
 
                     if (cap.isMotorboatDocked(this)) {
                         if (dockTime >= motorboatSchedule.entries().get(nextStopIdx).stopTime()) {
@@ -266,6 +263,12 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                         }
                         path = ImmutableList.of();
                         ++dockTime;
+                    } else if (pathCheckTimestamp + 30 < gameTime) {
+                        var pair = cap.getBoxForMotorboatPathfinding();
+                        path = pathfindToDockAABB(
+                                positionForPathfinding(),
+                                pair.first(), pair.second());
+                        pathCheckTimestamp = gameTime;
                     }
                 }
             } else {
@@ -467,37 +470,38 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return true;
     }
 
-    private record PathfindPQEntry(double cost, Vec3i point) implements Comparable<PathfindPQEntry> {
+    private record PathfindPQEntry(double cost, BlockPos point) implements Comparable<PathfindPQEntry> {
         @Override
         public int compareTo(@Nonnull PathfindPQEntry o) {
             return Double.compare(cost, o.cost);
         }
     }
 
-    private double calcHeuristic(Vec3i point, Vec3i minGoal, Vec3i maxGoal) {
+    private double calcHeuristic(BlockPos point, BlockPos minGoal, BlockPos maxGoal) {
         double cand = Double.POSITIVE_INFINITY;
         for (int x = minGoal.getX(); x <= maxGoal.getX(); ++x) {
             for (int z = minGoal.getZ(); z <= maxGoal.getZ(); ++z) {
-                cand = Math.min(cand, point.distSqr(new Vec3i(x, point.getY(), z)));
+                cand = Math.min(cand, point.distSqr(new BlockPos(x, point.getY(), z)));
             }
         }
         return Math.sqrt(cand);
     }
 
-    private boolean posValid(BlockPos pos, Object2BooleanMap<BlockPos> cache) {
-        return cache.computeIfAbsent(pos.immutable(),
-                k -> canBoatInFluid(level().getFluidState(pos)) && level().getBlockState(pos.above()).getCollisionShape(level(), pos).isEmpty());
+    private boolean posValid(BlockPos pos) {
+        return canBoatInFluid(level().getFluidState(pos))
+                && level().getBlockState(pos).getCollisionShape(level(), pos).isEmpty()
+                && level().getBlockState(pos.above()).getCollisionShape(level(), pos.above()).isEmpty();
     }
 
-    private boolean nodeValid(Vec3i point, Object2BooleanMap<BlockPos> cache) {
-        return BlockPos.betweenClosedStream(
+    private boolean nodeValid(BlockPos point, Long2BooleanMap cache) {
+        return cache.computeIfAbsent(point.asLong(), p -> BlockPos.betweenClosedStream(
                 new BlockPos(point.getX() - 1, point.getY(), point.getZ() - 1),
                 new BlockPos(point.getX() + 1, point.getY(), point.getZ() + 1)
-        ).allMatch(pos -> posValid(pos, cache));
+        ).allMatch(this::posValid));
     }
 
-    private List<Vec3i> getNeighbors(Vec3i point, Object2BooleanMap<BlockPos> cache) {
-        List<Vec3i> result = new ArrayList<>(4);
+    private List<BlockPos> getNeighbors(BlockPos point, Long2BooleanMap cache) {
+        List<BlockPos> result = new ArrayList<>(4);
 
         for (var direction: Direction.Plane.HORIZONTAL) {
             var cand = point.relative(direction);
@@ -508,7 +512,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return result;
     }
 
-    private boolean hasLOS(Vec3i pointA, Vec3i pointB, Object2BooleanMap<BlockPos> cache) {
+    private boolean hasLOS(BlockPos pointA, BlockPos pointB, Long2BooleanMap cache) {
         int deltaX = Math.abs(pointB.getX() - pointA.getX());
         int deltaZ = -Math.abs(pointB.getZ() - pointA.getZ());
         int sgnX = pointA.getX() < pointB.getX() ? 1 : -1;
@@ -517,7 +521,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         int x = pointA.getX(), z = pointA.getZ();
 
         for (;;) {
-            if (!nodeValid(new Vec3i(x, pointA.getY(), z), cache)) {
+            if (!nodeValid(new BlockPos(x, pointA.getY(), z), cache)) {
                 return false;
             }
 
@@ -544,14 +548,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return true;
     }
 
-    private List<Vec3i> pathfindToDockAABB(Vec3i start, Vec3i minGoal, Vec3i maxGoal) {
+    private List<BlockPos> pathfindToDockAABB(BlockPos start, BlockPos minGoal, BlockPos maxGoal) {
         if (minGoal.getY() > start.getY() || maxGoal.getY() < start.getY()) {
             return ImmutableList.of();
         }
 
-        Object2BooleanMap<BlockPos> posCache = new Object2BooleanOpenHashMap<>();
-        Object2DoubleMap<Vec3i> dists = new Object2DoubleOpenHashMap<>();
-        Object2ObjectMap<Vec3i, Vec3i> parents = new Object2ObjectOpenHashMap<>();
+        Long2BooleanMap posCache = new Long2BooleanOpenHashMap();
+        Object2DoubleMap<BlockPos> dists = new Object2DoubleOpenHashMap<>();
+        Object2ObjectMap<BlockPos, BlockPos> parents = new Object2ObjectOpenHashMap<>();
         PriorityQueue<PathfindPQEntry> pq = new ObjectHeapPriorityQueue<>();
 
         dists.put(start, 0.0);
@@ -563,7 +567,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             if (otherMotorboat != this) {
                 BlockPos.betweenClosedStream(otherMotorboat.getBoundingBox()).forEach(pos -> {
                     if (pos.getY() == start.getY()) {
-                        posCache.put(pos.immutable(), false);
+                        posCache.put(pos.asLong(), false);
                     }
                 });
             }
@@ -577,8 +581,8 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             if (entry.point.getX() >= minGoal.getX() && entry.point.getX() <= maxGoal.getX()
                 && entry.point.getZ() >= minGoal.getZ() && entry.point.getZ() <= maxGoal.getZ()) {
 
-                List<Vec3i> result = new ArrayList<>();
-                Vec3i point = entry.point;
+                List<BlockPos> result = new ArrayList<>();
+                BlockPos point = entry.point;
                 while (point != null) {
                     result.add(point);
                     point = parents.get(point);
@@ -600,8 +604,8 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return ImmutableList.of();
     }
 
-    private Vec3i positionForPathfinding() {
-        return new BlockPos((int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ()));
+    private BlockPos positionForPathfinding() {
+        return BlockPos.containing(position());
     }
 
     private Optional<Vec3> targetLocation() {
