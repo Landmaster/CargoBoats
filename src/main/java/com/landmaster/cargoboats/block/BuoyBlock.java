@@ -27,7 +27,7 @@ public class BuoyBlock extends Block {
     public record PathfindingNode(Level level, BlockPos pos) implements MotorboatPathfindingNode {
         @Override
         public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
-            return Pair.of(pos.offset(-1, -1, -1), pos.offset(1, 1, 1));
+            return Pair.of(pos.offset(0, -1, 0), pos.offset(0, 1, 0));
         }
 
         @Override

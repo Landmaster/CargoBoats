@@ -1,6 +1,7 @@
 package com.landmaster.cargoboats.network;
 
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.level.LevelRendering;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -22,10 +23,8 @@ public record TrackMotorboatPacket(Optional<Vector3f> pos) implements CustomPack
             TrackMotorboatPacket::new
     );
 
-    public static Vector3f trackedPos;
-
     public void handle(IPayloadContext ctx) {
-        trackedPos = pos.orElse(null);
+        LevelRendering.trackedPos = pos.orElse(null);
     }
 
     @Nonnull

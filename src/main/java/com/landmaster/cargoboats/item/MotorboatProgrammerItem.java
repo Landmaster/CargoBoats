@@ -30,10 +30,6 @@ public class MotorboatProgrammerItem extends Item {
         return res;
     }
 
-    public int maxEntriesAllowed(ItemStack stack) {
-        return 20;
-    }
-
     @Nonnull
     @Override
     public InteractionResult onItemUseFirst(@Nonnull ItemStack stack, @Nonnull UseOnContext context) {
@@ -43,21 +39,18 @@ public class MotorboatProgrammerItem extends Item {
         var cap = level.getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
         if (cap != null) {
             var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
-            if (schedule.entries().size() < maxEntriesAllowed(stack)) {
-                stack.set(CargoBoats.MOTORBOAT_SCHEDULE,
-                        new MotorboatSchedule(
-                                Stream.concat(
-                                        schedule.entries().stream(),
-                                        Stream.of(new MotorboatSchedule.Entry(pos, cap.defaultStopTime(), level.dimension()))
-                                ).collect(Collectors.toList())
-                        )
-                );
-                if (level.isClientSide && player != null) {
-                    player.displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
-                }
-                return InteractionResult.SUCCESS;
+            stack.set(CargoBoats.MOTORBOAT_SCHEDULE,
+                    new MotorboatSchedule(
+                            Stream.concat(
+                                    schedule.entries().stream(),
+                                    Stream.of(new MotorboatSchedule.Entry(pos, cap.defaultStopTime(), level.dimension()))
+                            ).collect(Collectors.toList())
+                    )
+            );
+            if (level.isClientSide && player != null) {
+                player.displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
             }
-            return InteractionResult.FAIL;
+            return InteractionResult.SUCCESS;
         }
         return super.onItemUseFirst(stack, context);
     }
@@ -74,15 +67,8 @@ public class MotorboatProgrammerItem extends Item {
 
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
-        for (int i=0; i<4; ++i) {
-            Object[] args = i == 3 ? new Object[] { maxEntriesAllowed(stack) } : new Object[0];
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i, args).withStyle(ChatFormatting.AQUA));
-        }
-        for (var entry: schedule.entries()) {
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_schedule",
-                            entry.dock().toShortString(), entry.dimension().location().toString(), entry.stopTime())
-                    .withStyle(ChatFormatting.YELLOW));
+        for (int i=0; i<3; ++i) {
+            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
         }
     }
 

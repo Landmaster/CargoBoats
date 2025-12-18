@@ -1,7 +1,6 @@
 package com.landmaster.cargoboats.level;
 
 import com.landmaster.cargoboats.CargoBoats;
-import com.landmaster.cargoboats.network.TrackMotorboatPacket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -18,8 +17,13 @@ import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Vector3f;
 
+import javax.annotation.Nullable;
+
 @EventBusSubscriber
 public class LevelRendering {
+    @Nullable
+    public static Vector3f trackedPos = null;
+
     @SubscribeEvent
     private static void onRenderBlockOutline(RenderHighlightEvent.Block event) {
         var level = Minecraft.getInstance().level;
@@ -44,17 +48,20 @@ public class LevelRendering {
     private static void onLevelRender(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) {
             if (event.getCamera().getEntity() instanceof Player player) {
-                if (TrackMotorboatPacket.trackedPos != null) {
+                if (trackedPos != null) {
                     var consumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.lines());
                     var poseStack = event.getPoseStack();
                     var pose = poseStack.last();
                     var cameraPos = event.getCamera().getPosition();
-                    var startPos = player.position().subtract(cameraPos).toVector3f();
-                    var endPos = cameraPos.toVector3f().sub(TrackMotorboatPacket.trackedPos).negate();
-                    var diff = new Vector3f(endPos).sub(startPos);
+                    float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
+                    float startX = (float)(Mth.lerp(partialTick, player.xOld, player.position().x) - cameraPos.x);
+                    float startY = (float)(Mth.lerp(partialTick, player.yOld, player.position().y) - cameraPos.y + player.getEyeHeight() * 0.5);
+                    float startZ = (float)(Mth.lerp(partialTick, player.zOld, player.position().z) - cameraPos.z);
+                    var endPos = cameraPos.toVector3f().sub(trackedPos).negate();
+                    var diff = new Vector3f(endPos).sub(startX, startY, startZ);
                     if (diff.lengthSquared() > 0.001) {
                         diff.normalize();
-                        consumer.addVertex(pose, startPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
+                        consumer.addVertex(pose, startX, startY, startZ).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
                         consumer.addVertex(pose, endPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
                     }
                 }

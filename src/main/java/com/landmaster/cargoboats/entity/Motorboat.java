@@ -8,10 +8,7 @@ import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import it.unimi.dsi.fastutil.PriorityQueue;
-import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
-import it.unimi.dsi.fastutil.longs.Long2BooleanOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -23,6 +20,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -80,6 +78,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public final ItemStackHandler itemHandler = new ItemStackHandler(27);
     public final IItemHandler combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
     private long pathCheckTimestamp = Long.MIN_VALUE;
+    public boolean showDestination = false;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -470,7 +469,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return true;
     }
 
-    private record PathfindPQEntry(double cost, BlockPos point) implements Comparable<PathfindPQEntry> {
+    private record PathfindPQEntry(double cost, long point) implements Comparable<PathfindPQEntry> {
         @Override
         public int compareTo(@Nonnull PathfindPQEntry o) {
             return Double.compare(cost, o.cost);
@@ -484,7 +483,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                 cand = Math.min(cand, point.distSqr(new BlockPos(x, point.getY(), z)));
             }
         }
-        return Math.sqrt(cand);
+        return 1.5 * Math.sqrt(cand);
     }
 
     private boolean posValid(BlockPos pos) {
@@ -554,49 +553,53 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
 
         Long2BooleanMap posCache = new Long2BooleanOpenHashMap();
-        Object2DoubleMap<BlockPos> dists = new Object2DoubleOpenHashMap<>();
-        Object2ObjectMap<BlockPos, BlockPos> parents = new Object2ObjectOpenHashMap<>();
+        Long2DoubleMap dists = new Long2DoubleOpenHashMap();
+        Long2LongMap parents = new Long2LongOpenHashMap();
         PriorityQueue<PathfindPQEntry> pq = new ObjectHeapPriorityQueue<>();
 
-        dists.put(start, 0.0);
-        pq.enqueue(new PathfindPQEntry(calcHeuristic(start, minGoal, maxGoal), start));
+        dists.put(start.asLong(), 0.0);
+        pq.enqueue(new PathfindPQEntry(calcHeuristic(start, minGoal, maxGoal), start.asLong()));
 
         for (var otherMotorboat: level().getEntitiesOfClass(Motorboat.class, AABB.encapsulatingFullBlocks(
                 new BlockPos(start.getX() - 5, start.getY(), start.getZ() - 5), new BlockPos(start.getX() + 5, start.getY(), start.getZ() + 5))
         )) {
             if (otherMotorboat != this) {
-                BlockPos.betweenClosedStream(otherMotorboat.getBoundingBox()).forEach(pos -> {
-                    if (pos.getY() == start.getY()) {
-                        posCache.put(pos.asLong(), false);
-                    }
-                });
+                posCache.put(otherMotorboat.positionForPathfinding().asLong(), false);
             }
         }
 
         while (!pq.isEmpty()) {
             var entry = pq.dequeue();
-            if (entry.cost > Config.MOTORBOAT_MAX_SEARCH_DISTANCE.getAsDouble()) {
+            var maxSearchDist = Config.MOTORBOAT_MAX_SEARCH_DISTANCE.getAsDouble();
+            if (entry.cost > maxSearchDist || dists.size() > Mth.floor(maxSearchDist * 16)) {
                 break;
             }
-            if (entry.point.getX() >= minGoal.getX() && entry.point.getX() <= maxGoal.getX()
-                && entry.point.getZ() >= minGoal.getZ() && entry.point.getZ() <= maxGoal.getZ()) {
+            BlockPos point = BlockPos.of(entry.point);
+            if (point.getX() >= minGoal.getX() && point.getX() <= maxGoal.getX()
+                && point.getZ() >= minGoal.getZ() && point.getZ() <= maxGoal.getZ()) {
 
                 List<BlockPos> result = new ArrayList<>();
-                BlockPos point = entry.point;
-                while (point != null) {
-                    result.add(point);
-                    point = parents.get(point);
+                long pointLong = entry.point;
+                for (;;) {
+                    result.add(BlockPos.of(pointLong));
+                    if (!parents.containsKey(pointLong)) break;
+                    pointLong = parents.get(pointLong);
                 }
                 return result;
             }
-            for (var cand: getNeighbors(entry.point, posCache)) {
-                var parent = parents.get(entry.point);
-                var candParent = parent != null && hasLOS(parent, cand, posCache) ? parent : entry.point;
-                var candDist = dists.getDouble(candParent) + Math.sqrt(candParent.distSqr(cand));
-                if (dists.getOrDefault(cand, Double.POSITIVE_INFINITY) > candDist) {
-                    dists.put(cand, candDist);
-                    parents.put(cand, candParent);
-                    pq.enqueue(new PathfindPQEntry(candDist + calcHeuristic(cand, minGoal, maxGoal), cand));
+            for (var cand: getNeighbors(point, posCache)) {
+                BlockPos candParent = point;
+                if (parents.containsKey(entry.point)) {
+                    var parent = BlockPos.of(parents.get(entry.point));
+                    if (hasLOS(parent, cand, posCache)) {
+                        candParent = parent;
+                    }
+                }
+                var candDist = dists.get(candParent.asLong()) + Math.sqrt(candParent.distSqr(cand));
+                if (dists.getOrDefault(cand.asLong(), Double.POSITIVE_INFINITY) > candDist) {
+                    dists.put(cand.asLong(), candDist);
+                    parents.put(cand.asLong(), candParent.asLong());
+                    pq.enqueue(new PathfindPQEntry(candDist + calcHeuristic(cand, minGoal, maxGoal), cand.asLong()));
                 }
             }
         }

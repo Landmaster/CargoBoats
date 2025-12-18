@@ -15,6 +15,8 @@ import javax.annotation.Nonnull;
 
 public class MotorboatProgrammerScreen extends AbstractContainerScreen<MotorboatProgrammerMenu> {
     private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/motorboat_programmer.png");
+    private int page = 0;
+    public static final int PAGE_SIZE = 12;
 
     public MotorboatProgrammerScreen(MotorboatProgrammerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -22,16 +24,27 @@ public class MotorboatProgrammerScreen extends AbstractContainerScreen<Motorboat
         imageHeight = 222;
     }
 
-    private static class AdjustingButton extends Button {
-        public final int index;
+    private class PageButton extends Button {
+        public PageButton(int x, int y, int delta) {
+            super(x, y, 12, 12, Component.literal(delta >= 0 ? "+" : "-"), btn -> {
+                page = Math.clamp(page + delta, 0, (menu.getSchedule().entries().size() - 1) / PAGE_SIZE);
+            }, DEFAULT_NARRATION);
+        }
+    }
+
+    private class AdjustingButton extends Button {
+        private final int index;
         public final int delta;
 
         public AdjustingButton(int x, int y, int index, int delta) {
-            super(x, y, 12, 12, Component.literal(delta == Integer.MIN_VALUE ? "" : delta >= 0 ? "+" : "-"), btn -> {
-                PacketDistributor.sendToServer(new ModifySchedulePacket(index, delta));
-            }, DEFAULT_NARRATION);
+            super(x, y, 12, 12, Component.literal(delta == Integer.MIN_VALUE ? "" : delta >= 0 ? "+" : "-"), btn -> {}, DEFAULT_NARRATION);
             this.index = index;
             this.delta = delta;
+        }
+
+        @Override
+        public void onPress() {
+            PacketDistributor.sendToServer(new ModifySchedulePacket(adjustedIndex(), delta));
         }
 
         @Override
@@ -48,35 +61,46 @@ public class MotorboatProgrammerScreen extends AbstractContainerScreen<Motorboat
                 super.renderString(guiGraphics, font, color);
             }
         }
+
+        public int adjustedIndex() {
+            return page * PAGE_SIZE + index;
+        }
     };
 
     @Override
     protected void init() {
         super.init();
-        for (int i=0; i<15; ++i) {
-            addRenderableWidget(new AdjustingButton(leftPos + 8, topPos + 20 + i * 12, i, -10));
-            addRenderableWidget(new AdjustingButton(leftPos + 50, topPos + 20 + i * 12, i, 10));
-            addRenderableWidget(new AdjustingButton(leftPos + 190, topPos + 20 + i * 12, i, Integer.MIN_VALUE));
+        for (int i=0; i<PAGE_SIZE; ++i) {
+            addRenderableWidget(new AdjustingButton(leftPos + 8, topPos + 32 + i * 12, i, -10));
+            addRenderableWidget(new AdjustingButton(leftPos + 50, topPos + 32 + i * 12, i, 10));
+            addRenderableWidget(new AdjustingButton(leftPos + 190, topPos + 32 + i * 12, i, Integer.MIN_VALUE));
         }
+        addRenderableWidget(new PageButton(leftPos + imageWidth / 2 - 32 - 6, topPos + 20, -1));
+        addRenderableWidget(new PageButton(leftPos + imageWidth / 2 + 32 - 6, topPos + 20, 1));
     }
 
     @Override
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         var schedule = menu.getSchedule();
-        for (int i=0; i<schedule.entries().size(); ++i) {
+
+        for (int i=0; i<PAGE_SIZE; ++i) {
             for (var renderable: renderables) {
                 if (renderable instanceof AdjustingButton button) {
-                    button.visible = button.index < schedule.entries().size();
+                    button.visible = button.adjustedIndex() < schedule.entries().size();
                 }
             }
         }
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        for (int i=0; i<schedule.entries().size(); ++i) {
+        var pageComponent = Component.translatable("gui.cargoboats.page", page+1, 1+(schedule.entries().size() - 1) / PAGE_SIZE);
+        guiGraphics.drawString(font, pageComponent, leftPos + (imageWidth - font.width(pageComponent)) / 2,
+                topPos + 22, 0xff000000, false);
+
+        for (int i=page * PAGE_SIZE; i<schedule.entries().size() && i < (page+1) * PAGE_SIZE; ++i) {
             var entry = schedule.entries().get(i);
             int x = leftPos + 36;
-            int y = topPos + 22 + i*12;
+            int y = topPos + 34 + (i % PAGE_SIZE)*12;
             var component = Component.literal(Integer.toString(entry.stopTime()));
             guiGraphics.drawString(font, component, x - font.width(component) / 2, y, 0xff000000, false);
             x = leftPos + 66;
