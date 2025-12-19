@@ -2,7 +2,7 @@ package com.landmaster.cargoboats.entity.render;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
-import com.landmaster.cargoboats.entity.Motorboat;
+import com.landmaster.cargoboats.util.FluidRenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -38,6 +38,19 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat> {
             VertexConsumer vertexconsumer1 = bufferSource.getBuffer(RenderType.waterMask());
             model.waterPatch().render(poseStack, vertexconsumer1, packedLight, OverlayTexture.NO_OVERLAY);
         }
+
+        poseStack.pushPose();
+        var fluidStack = p_entity.tank.getFluid();
+        var capacity = p_entity.tank.getCapacity();
+        poseStack.translate(-0.56f, -0.23f, 0.37f);
+        poseStack.mulPose(Axis.XP.rotationDegrees(180));
+        poseStack.scale(0.73f, 0.73f * Math.clamp((float)fluidStack.getAmount() / capacity, 0.0f, 1.0f), 0.73f);
+//        poseStack.scale(0.73f, 0.73f * Math.clamp((float)fluidStack.getAmount() / capacity, 0.0f, 1.0f), 0.73f);
+//        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+//        poseStack.translate(-0.25f, -1.32f, -0.5f);
+        FluidRenderUtil.renderCubeUsingQuads(fluidStack, partialTick, poseStack, bufferSource, packedLight, packedLight);
+        poseStack.popPose();
+
         poseStack.popPose();
         super.render(p_entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
     }

@@ -14,6 +14,7 @@ import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.network.ModifySchedulePacket;
 import com.landmaster.cargoboats.network.SetAutomationPacket;
+import com.landmaster.cargoboats.network.SyncFluidMotorboatPacket;
 import com.landmaster.cargoboats.network.TrackMotorboatPacket;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.core.BlockPos;
@@ -212,6 +213,7 @@ public class CargoBoats {
         registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
         registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
         registrar.playToClient(TrackMotorboatPacket.TYPE, TrackMotorboatPacket.STREAM_CODEC, TrackMotorboatPacket::handle);
+        registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
     }
 
     @SubscribeEvent

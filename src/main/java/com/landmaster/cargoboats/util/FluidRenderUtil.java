@@ -147,14 +147,14 @@ public class FluidRenderUtil {
                 normalVector, color, lightmapValue);
     }
 
-    public static void renderCubeUsingQuads(int capacity, FluidStack fluid, float partialTicks, PoseStack PoseStack, MultiBufferSource renderBuffers, int combinedLight, int combinedOverlay) {
-        drawCubeQuads(PoseStack, renderBuffers, combinedLight, fluid, capacity);
+    public static void renderCubeUsingQuads(FluidStack fluid, float partialTicks, PoseStack PoseStack, MultiBufferSource renderBuffers, int combinedLight, int combinedOverlay) {
+        drawCubeQuads(PoseStack, renderBuffers, combinedLight, fluid);
     }
 
     /**
      * Draw a cube from [0,0,0] to [1,1,1], same texture on all sides, using a supplied texture
      */
-    private static void drawCubeQuads(PoseStack poseStack, MultiBufferSource renderBuffer, int combinedLight, FluidStack fluid, int capacity) {
+    private static void drawCubeQuads(PoseStack poseStack, MultiBufferSource renderBuffer, int combinedLight, FluidStack fluid) {
         // other typical RenderTypes used by TER are:
         // getEntityCutout, getBeaconBeam (which has translucent),
         IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluid.getFluid());
