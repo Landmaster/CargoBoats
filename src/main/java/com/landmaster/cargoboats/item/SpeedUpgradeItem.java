@@ -1,6 +1,7 @@
 package com.landmaster.cargoboats.item;
 
 import com.landmaster.cargoboats.Config;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 
 public class SpeedUpgradeItem extends Item implements MotorboatUpgrade {
@@ -9,7 +10,7 @@ public class SpeedUpgradeItem extends Item implements MotorboatUpgrade {
     }
 
     @Override
-    public int maxUpgradeAmount() {
+    public int maxUpgradeAmount(EntityType<?> entityType) {
         return Config.MOTORBOAT_SPEED_MULTIPLIERS.get().size();
     }
 }

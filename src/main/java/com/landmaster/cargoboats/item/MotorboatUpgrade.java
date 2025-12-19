@@ -1,5 +1,7 @@
 package com.landmaster.cargoboats.item;
 
+import net.minecraft.world.entity.EntityType;
+
 public interface MotorboatUpgrade {
-    int maxUpgradeAmount();
+    int maxUpgradeAmount(EntityType<?> entityType);
 }

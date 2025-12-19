@@ -24,8 +24,16 @@ import java.util.function.Predicate;
 public class MotorboatItem extends Item {
     private static final Predicate<Entity> ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
 
-    public MotorboatItem(Properties properties) {
+    @FunctionalInterface
+    public interface BoatFactory {
+        Motorboat create(Level level, double x, double y, double z);
+    }
+
+    private final BoatFactory boatFactory;
+
+    public MotorboatItem(BoatFactory boatFactory, Properties properties) {
         super(properties);
+        this.boatFactory = boatFactory;
     }
 
     public @Nonnull InteractionResultHolder<ItemStack> use(@Nonnull Level level, Player player, @Nonnull InteractionHand hand) {
@@ -49,7 +57,7 @@ public class MotorboatItem extends Item {
 
             if (hitresult.getType() == HitResult.Type.BLOCK) {
                 Vec3 hitResultLoc = hitresult.getLocation();
-                Boat boat = new Motorboat(level, hitResultLoc.x, hitResultLoc.y, hitResultLoc.z);
+                var boat = boatFactory.create(level, hitResultLoc.x, hitResultLoc.y, hitResultLoc.z);
                 boat.setYRot(player.getYRot());
                 if (!level.noCollision(boat, boat.getBoundingBox())) {
                     return InteractionResultHolder.fail(itemstack);

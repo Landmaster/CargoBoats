@@ -4,6 +4,7 @@ import com.landmaster.cargoboats.block.BuoyBlock;
 import com.landmaster.cargoboats.block.DockBlock;
 import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
+import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
@@ -48,6 +49,7 @@ import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.energy.EmptyEnergyStorage;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
+import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -112,7 +114,10 @@ public class CargoBoats {
 
     public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
     public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
-    public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat", MotorboatItem::new, new Item.Properties().stacksTo(1));
+    public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat",
+            p -> new MotorboatItem(Motorboat::new, p), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<MotorboatItem> FLUID_MOTORBOAT_ITEM = ITEMS.registerItem("fluid_motorboat",
+            p -> new MotorboatItem(FluidMotorboat::new, p), new Item.Properties().stacksTo(1));
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
@@ -123,6 +128,10 @@ public class CargoBoats {
             () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
                     .sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
                     .build("motorboat"));
+    public static final Supplier<EntityType<FluidMotorboat>> FLUID_MOTORBOAT = ENTITIES.register("fluid_motorboat",
+            () -> EntityType.Builder.<FluidMotorboat>of(FluidMotorboat::new, MobCategory.MISC)
+                    .sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
+                    .build("fluid_motorboat"));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.cargoboats")) //The language key for the title of your CreativeModeTab
@@ -132,6 +141,7 @@ public class CargoBoats {
                 output.accept(DOCK_ITEM);
                 output.accept(BUOY_ITEM);
                 output.accept(MOTORBOAT_ITEM);
+                output.accept(FLUID_MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
                 output.accept(SPEED_UPGRADE);
                 output.accept(MOTORBOAT_TRACKER);
@@ -173,12 +183,19 @@ public class CargoBoats {
         event.registerEntity(Capabilities.ItemHandler.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
         event.registerEntity(Capabilities.EnergyStorage.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity);
 
+        event.registerEntity(Capabilities.ItemHandler.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
+        event.registerEntity(Capabilities.FluidHandler.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.tank);
+        event.registerEntity(Capabilities.EnergyStorage.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity);
+
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
                 .map(motorboat -> motorboat.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, null))
                 .orElse(EmptyItemHandler.INSTANCE));
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
                 .map(motorboat -> motorboat.getCapability(Capabilities.EnergyStorage.ENTITY, null))
                 .orElse(EmptyEnergyStorage.INSTANCE));
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
+                .map(motorboat -> motorboat.getCapability(Capabilities.FluidHandler.ENTITY, null))
+                .orElse(EmptyFluidHandler.INSTANCE));
 
         event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, DOCK_TE.get(), (te, ctx) -> te);
         event.registerBlock(MOTORBOAT_PATHFINDING_NODE, (level, pos, state, blockEntity, context) -> new BuoyBlock.PathfindingNode(level, pos), BUOY.get());

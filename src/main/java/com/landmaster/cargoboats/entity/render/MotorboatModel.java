@@ -36,7 +36,7 @@ public class MotorboatModel extends HierarchicalModel<Motorboat> implements Wate
                 .texOffs(42, 36).addBox(-10.0F, -35.0F, -10.0F, 20.0F, 8.0F, 1.0F, new CubeDeformation(0.0F))
                 .texOffs(42, 45).addBox(-10.0F, -35.0F, 9.0F, 20.0F, 8.0F, 1.0F, new CubeDeformation(0.0F))
                 .texOffs(0, 36).addBox(-10.0F, -35.0F, -10.0F, 1.0F, 8.0F, 20.0F, new CubeDeformation(0.0F))
-                .texOffs(76, 86).addBox(-9.0F, -40.0F, -6.0F, 12.0F, 12.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
+                .texOffs(76, 86).addBox(-8.99F, -40.01F, -6.0F, 12.0F, 12.0F, 12.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
 
         PartDefinition cube_r1 = main.addOrReplaceChild("cube_r1", CubeListBuilder.create().texOffs(56, 21).addBox(-13.0F, -8.0F, -1.0F, 14.0F, 8.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(19.0F, -27.0F, 1.0F, 0.0F, 0.7854F, 0.0F));
 

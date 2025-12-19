@@ -4,6 +4,7 @@ import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.MotorboatUpgrade;
 import com.landmaster.cargoboats.item.MotorboatUpgradeItemHandler;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
@@ -23,7 +24,9 @@ public class MotorboatMenu extends AbstractContainerMenu {
 
     public MotorboatMenu(int containerId, Inventory playerInventory) {
         this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory,
-                new CombinedInvWrapper(new MotorboatUpgradeItemHandler(Motorboat.NUM_UPGRADES), new ItemStackHandler(27 )), new SimpleContainerData(2));
+                new CombinedInvWrapper(
+                        new MotorboatUpgradeItemHandler(CargoBoats.MOTORBOAT.get(), Motorboat.NUM_UPGRADES),
+                        new ItemStackHandler(27 )), new SimpleContainerData(2));
     }
 
     public MotorboatMenu(int containerId, Inventory playerInventory, Motorboat motorboat) {
@@ -42,7 +45,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
                 public int getMaxStackSize(@Nonnull ItemStack stack) {
                     int limit = super.getMaxStackSize(stack);
                     if (stack.getItem() instanceof MotorboatUpgrade upgrade) {
-                        limit = Math.min(limit, upgrade.maxUpgradeAmount());
+                        limit = Math.min(limit, upgrade.maxUpgradeAmount(CargoBoats.MOTORBOAT.get()));
                     }
                     return limit;
                 }

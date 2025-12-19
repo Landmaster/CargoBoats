@@ -77,7 +77,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private ChunkPos lastChunk;
     private final LongSet chunkSet = new LongOpenHashSet();
     public static final int NUM_UPGRADES = 5;
-    public final ItemStackHandler upgradeHandler = new MotorboatUpgradeItemHandler(NUM_UPGRADES);
+    public final ItemStackHandler upgradeHandler;
     public final ItemStackHandler itemHandler;
     public final IItemHandler combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
@@ -106,6 +106,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level, int invSize) {
         super(entityType, level);
+        this.upgradeHandler = new MotorboatUpgradeItemHandler(entityType, NUM_UPGRADES);
         this.itemHandler = new ItemStackHandler(invSize);
         this.combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
     }

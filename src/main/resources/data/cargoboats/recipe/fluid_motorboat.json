@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "tag": "c:ingots/copper"
+    },
+    "p": {
+      "item": "minecraft:piston"
+    },
+    "b": {
+      "item": "minecraft:bucket"
+    },
+    "B": {
+      "tag": "minecraft:boats"
+    }
+  },
+  "pattern": [
+    " b ",
+    "pBc",
+    "ccc"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:fluid_motorboat"
+  }
+}

@@ -1,16 +1,17 @@
 package com.landmaster.cargoboats.item;
 
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 
 public class MotorboatUpgradeItemHandler extends ItemStackHandler {
-    public MotorboatUpgradeItemHandler() {
-    }
+    private final EntityType<?> entityType;
 
-    public MotorboatUpgradeItemHandler(int slots) {
+    public MotorboatUpgradeItemHandler(EntityType<?> entityType, int slots) {
         super(slots);
+        this.entityType = entityType;
     }
 
     @Override
@@ -30,7 +31,7 @@ public class MotorboatUpgradeItemHandler extends ItemStackHandler {
     protected int getStackLimit(int slot, @Nonnull ItemStack stack) {
         int limit = super.getStackLimit(slot, stack);
         if (stack.getItem() instanceof MotorboatUpgrade upgrade) {
-            limit = Math.min(limit, upgrade.maxUpgradeAmount());
+            limit = Math.min(limit, upgrade.maxUpgradeAmount(entityType));
         }
         return limit;
     }
