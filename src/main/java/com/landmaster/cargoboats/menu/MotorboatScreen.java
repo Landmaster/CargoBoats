@@ -39,8 +39,16 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
-                guiGraphics.drawString(font, Component.translatable("gui.cargoboats.next_stop", entry.dock().toShortString()),
-                        leftPos + 8, topPos + 34, 0xFF000000, false);
+                var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
+                var x = leftPos + 8;
+                var y = topPos + 34;
+                guiGraphics.drawString(font, componentToDraw, x, y, 0xFF000000, false);
+                var width = font.width(componentToDraw);
+                if (mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + font.lineHeight) {
+                    guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.next_stop",
+                                    entry.dock().toShortString(), entry.dimension().location().toString()),
+                            mouseX, mouseY);
+                }
             });
             ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
         }

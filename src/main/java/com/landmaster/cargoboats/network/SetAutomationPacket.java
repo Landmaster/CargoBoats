@@ -25,7 +25,7 @@ public record SetAutomationPacket(boolean enabled) implements CustomPacketPayloa
     public void handle(IPayloadContext ctx) {
         if (ctx.player().containerMenu instanceof MotorboatMenu menu) {
             menu.getMotorboat().ifPresent(motorboat -> {
-                motorboat.automationEnabled = enabled;
+                motorboat.setAutomationEnabled(enabled);
             });
         }
     }

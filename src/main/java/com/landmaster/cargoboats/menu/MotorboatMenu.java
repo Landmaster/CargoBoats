@@ -39,7 +39,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
         for (int i=0; i<Motorboat.NUM_UPGRADES; ++i) {
             addSlot(new SlotItemHandler(itemHandler, i, 80 + i*18, 46) {
                 @Override
-                public int getMaxStackSize(ItemStack stack) {
+                public int getMaxStackSize(@Nonnull ItemStack stack) {
                     int limit = super.getMaxStackSize(stack);
                     if (stack.getItem() instanceof MotorboatUpgrade upgrade) {
                         limit = Math.min(limit, upgrade.maxUpgradeAmount());

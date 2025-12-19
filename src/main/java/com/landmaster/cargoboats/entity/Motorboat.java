@@ -44,6 +44,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableDouble;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,6 +53,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, HasCustomInventoryScreen {
+    public static final long STUCK_TIME_THRESHOLD = 100;
+
     public final AnimationState rotorAnimationState = new AnimationState();
     public float rotorSpeed = 0;
 
@@ -70,15 +73,16 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private static final EntityDataAccessor<Integer> ENERGY = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.INT);
     private List<BlockPos> path = ImmutableList.of();
     private int dockTime = 0;
-    public boolean automationEnabled = true;
+    private boolean automationEnabled = true;
     private ChunkPos lastChunk;
     private final LongSet chunkSet = new LongOpenHashSet();
     public static final int NUM_UPGRADES = 5;
     public final ItemStackHandler upgradeHandler = new MotorboatUpgradeItemHandler(NUM_UPGRADES);
-    public final ItemStackHandler itemHandler = new ItemStackHandler(27);
-    public final IItemHandler combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
+    public final ItemStackHandler itemHandler;
+    public final IItemHandler combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
-    public boolean showDestination = false;
+    private long stuckTime = STUCK_TIME_THRESHOLD;
+    //public boolean showDestination = false;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -100,8 +104,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     };
 
-    public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
+    public Motorboat(EntityType<? extends Motorboat> entityType, Level level, int invSize) {
         super(entityType, level);
+        this.itemHandler = new ItemStackHandler(invSize);
+        this.combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
+    }
+
+    public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
+        this(entityType, level, 27);
     }
 
     public Motorboat(Level level, double x, double y, double z) {
@@ -110,6 +120,23 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         this.xo = x;
         this.yo = y;
         this.zo = z;
+    }
+
+    public void setAutomationEnabled(boolean newValue) {
+        this.automationEnabled = newValue;
+        if (!automationEnabled) {
+            resetDockingData(false);
+        }
+    }
+
+    @Override
+    protected float getSinglePassengerXOffset() {
+        return 0.15F;
+    }
+
+    @Override
+    protected int getMaxPassengers() {
+        return 1;
     }
 
     @Override
@@ -213,8 +240,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return res;
     }
 
-    @Override
-    public void tick() {
+    private void chunkLoad() {
         if (level() instanceof ServerLevel level && !this.chunkPosition().equals(lastChunk)) {
             var newChunkSet = new LongOpenHashSet();
             for (int i=-1; i<=1; ++i) {
@@ -233,8 +259,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             chunkSet.addAll(newChunkSet);
             lastChunk = chunkPosition();
         }
+    }
+
+    @Override
+    public void tick() {
+        chunkLoad();
 
         var motorActive = new MutableBoolean(false);
+        var expectedSpeed2 = new MutableDouble(0);
 
         var motorboatSchedule = getMotorboatSchedule();
 
@@ -256,13 +288,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                         if (dockTime >= motorboatSchedule.entries().get(nextStopIdx).stopTime()) {
                             getEntityData().set(NEXT_STOP_INDEX, (nextStopIdx + 1) % motorboatSchedule.entries().size());
                             dockTime = 0;
+                            stuckTime = STUCK_TIME_THRESHOLD;
                             if (cap.doBoatHorn()) {
                                 playSound(CargoBoats.BOAT_HORN_SOUND.get(), 0.5f, 0.0f);
                             }
                         }
                         path = ImmutableList.of();
                         ++dockTime;
-                    } else if (pathCheckTimestamp + 30 < gameTime) {
+                    } else if (pathCheckTimestamp + 30 < gameTime && (!detectedMotorboats().isEmpty() || stuckTime >= STUCK_TIME_THRESHOLD)) {
                         var pair = cap.getBoxForMotorboatPathfinding();
                         path = pathfindToDockAABB(
                                 positionForPathfinding(),
@@ -271,9 +304,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                     }
                 }
             } else {
-                path = ImmutableList.of();
-                dockTime = 0;
-                getEntityData().set(NEXT_STOP_INDEX, 0);
+                resetDockingData(false);
             }
         }
 
@@ -324,6 +355,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                         deltaVector = new Vec3(deltaVector.x * scalar, 0, deltaVector.z * scalar);
                         setYRot((float) (Math.toDegrees(Math.atan2(deltaVector.z, deltaVector.x)) - 90));
                         this.setDeltaMovement(deltaVector);
+                        expectedSpeed2.setValue(deltaVector.horizontalDistanceSqr());
                     }
                 });
             }
@@ -353,9 +385,35 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         if (!level().isClientSide) {
             getEntityData().set(MOTOR_ACTIVE, motorActive.booleanValue());
+
+            if (automationEnabled && isControlledByLocalInstance()) {
+                if (position().distanceToSqr(xo, yo, zo) < 0.2 * 0.2 * expectedSpeed2.getValue()) {
+                    ++stuckTime;
+                } else {
+                    stuckTime = 0;
+                }
+            }
         } else {
             rotorSpeed = Math.clamp(rotorSpeed + (getEntityData().get(MOTOR_ACTIVE) ? 0.01f : -0.01F), 0, 1);
         }
+    }
+
+    private void resetDockingData(boolean setStopIdx) {
+        dockTime = 0;
+        stuckTime = STUCK_TIME_THRESHOLD;
+        if (setStopIdx) {
+            var schedule = getEntityData().get(MOTORBOAT_SCHEDULE);
+            int candMinDockIndex = 0;
+            for (int i = 0; i < schedule.entries().size(); ++i) {
+                var entry = schedule.entries().get(i);
+                if (entry.dimension() == level().dimension()
+                        && entry.dock().distToCenterSqr(position()) < schedule.entries().get(candMinDockIndex).dock().distToCenterSqr(position())) {
+                    candMinDockIndex = i;
+                }
+            }
+            getEntityData().set(NEXT_STOP_INDEX, candMinDockIndex);
+        }
+        path = ImmutableList.of();
     }
 
     @Nonnull
@@ -364,10 +422,11 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         var stack = player.getItemInHand(hand);
 
         if (stack.has(CargoBoats.MOTORBOAT_SCHEDULE)) {
-            getEntityData().set(MOTORBOAT_SCHEDULE, stack.get(CargoBoats.MOTORBOAT_SCHEDULE));
-            dockTime = 0;
-            getEntityData().set(NEXT_STOP_INDEX, 0);
-            path = ImmutableList.of();
+            var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
+            getEntityData().set(MOTORBOAT_SCHEDULE, schedule);
+
+            resetDockingData(true);
+
             if (level().isClientSide) {
                 player.displayClientMessage(Component.translatable("message.cargoboats.motorboat_programmed"), false);
             }
@@ -547,6 +606,13 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return true;
     }
 
+    private List<Motorboat> detectedMotorboats() {
+        var start = positionForPathfinding();
+        return level().getEntitiesOfClass(Motorboat.class, AABB.encapsulatingFullBlocks(
+                new BlockPos(start.getX() - 4, start.getY(), start.getZ() - 4), new BlockPos(start.getX() + 4, start.getY(), start.getZ() + 4))
+        );
+    }
+
     private List<BlockPos> pathfindToDockAABB(BlockPos start, BlockPos minGoal, BlockPos maxGoal) {
         if (minGoal.getY() > start.getY() || maxGoal.getY() < start.getY()) {
             return ImmutableList.of();
@@ -560,9 +626,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         dists.put(start.asLong(), 0.0);
         pq.enqueue(new PathfindPQEntry(calcHeuristic(start, minGoal, maxGoal), start.asLong()));
 
-        for (var otherMotorboat: level().getEntitiesOfClass(Motorboat.class, AABB.encapsulatingFullBlocks(
-                new BlockPos(start.getX() - 5, start.getY(), start.getZ() - 5), new BlockPos(start.getX() + 5, start.getY(), start.getZ() + 5))
-        )) {
+        for (var otherMotorboat: detectedMotorboats()) {
             if (otherMotorboat != this) {
                 posCache.put(otherMotorboat.positionForPathfinding().asLong(), false);
             }
