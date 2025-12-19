@@ -10,6 +10,7 @@ import com.landmaster.cargoboats.item.MotorboatItem;
 import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
 import com.landmaster.cargoboats.item.MotorboatTrackerItem;
 import com.landmaster.cargoboats.item.SpeedUpgradeItem;
+import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.network.ModifySchedulePacket;
@@ -148,8 +149,12 @@ public class CargoBoats {
                 output.accept(MOTORBOAT_TRACKER);
             }).build());
 
-    public static final Supplier<MenuType<MotorboatMenu>> MOTORBOAT_MENU = MENU_TYPES.register("motorboat", () -> new MenuType<>(MotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
-    public static final Supplier<MenuType<MotorboatProgrammerMenu>> MOTORBOAT_PROGRAMMER_MENU = MENU_TYPES.register("motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
+    public static final Supplier<MenuType<MotorboatMenu>> MOTORBOAT_MENU = MENU_TYPES.register(
+            "motorboat", () -> new MenuType<>(MotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final Supplier<MenuType<FluidMotorboatMenu>> FLUID_MOTORBOAT_MENU = MENU_TYPES.register(
+            "fluid_motorboat", () -> new MenuType<>(FluidMotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
+    public static final Supplier<MenuType<MotorboatProgrammerMenu>> MOTORBOAT_PROGRAMMER_MENU = MENU_TYPES.register(
+            "motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));

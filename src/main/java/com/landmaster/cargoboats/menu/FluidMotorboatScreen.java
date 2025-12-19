@@ -1,7 +1,7 @@
 package com.landmaster.cargoboats.menu;
 
 import com.landmaster.cargoboats.CargoBoats;
-import com.landmaster.cargoboats.entity.Motorboat;
+import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.util.ClientUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,13 +12,13 @@ import net.minecraft.world.entity.player.Inventory;
 
 import javax.annotation.Nonnull;
 
-public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
-    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/motorboat.png");
+public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboatMenu> {
+    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/fluid_motorboat.png");
 
-    public MotorboatScreen(MotorboatMenu menu, Inventory playerInventory, Component title) {
+    public FluidMotorboatScreen(FluidMotorboatMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         imageHeight = 222;
-        inventoryLabelY = imageHeight - 94;
+        inventoryLabelY = imageHeight - 161;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
-        if (entity instanceof Motorboat motorboat) {
+        if (entity instanceof FluidMotorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
                 var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
                 var x = leftPos + 8;
@@ -56,7 +56,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
         guiGraphics.blit(CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
 
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
-        if (entity instanceof Motorboat motorboat) {
+        if (entity instanceof FluidMotorboat motorboat) {
             // energy
             ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 5, topPos + 16);
         }

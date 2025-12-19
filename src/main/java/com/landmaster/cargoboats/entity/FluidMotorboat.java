@@ -1,6 +1,7 @@
 package com.landmaster.cargoboats.entity;
 
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
 import com.landmaster.cargoboats.network.SyncFluidMotorboatPacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -49,7 +50,11 @@ public class FluidMotorboat extends Motorboat {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, @Nonnull Inventory playerInventory, @Nonnull Player player) {
-        return null;
+        if (player.isSpectator()) {
+            return null;
+        } else {
+            return new FluidMotorboatMenu(containerId, playerInventory, this);
+        }
     }
 
     @Override

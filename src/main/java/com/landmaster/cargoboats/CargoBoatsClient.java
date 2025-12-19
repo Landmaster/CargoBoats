@@ -3,6 +3,7 @@ package com.landmaster.cargoboats;
 import com.landmaster.cargoboats.entity.render.FluidMotorboatRenderer;
 import com.landmaster.cargoboats.entity.render.MotorboatModel;
 import com.landmaster.cargoboats.entity.render.MotorboatRenderer;
+import com.landmaster.cargoboats.menu.FluidMotorboatScreen;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerScreen;
 import com.landmaster.cargoboats.menu.MotorboatScreen;
 import net.neoforged.api.distmarker.Dist;
@@ -41,6 +42,7 @@ public class CargoBoatsClient {
     @SubscribeEvent
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(CargoBoats.MOTORBOAT_MENU.get(), MotorboatScreen::new);
+        event.register(CargoBoats.FLUID_MOTORBOAT_MENU.get(), FluidMotorboatScreen::new);
         event.register(CargoBoats.MOTORBOAT_PROGRAMMER_MENU.get(), MotorboatProgrammerScreen::new);
     }
 }

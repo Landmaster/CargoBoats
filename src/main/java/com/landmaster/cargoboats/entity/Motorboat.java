@@ -77,7 +77,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private ChunkPos lastChunk;
     private final LongSet chunkSet = new LongOpenHashSet();
     public static final int NUM_UPGRADES = 5;
-    public final ItemStackHandler upgradeHandler;
+    public final MotorboatUpgradeItemHandler upgradeHandler;
     public final ItemStackHandler itemHandler;
     public final IItemHandler combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;

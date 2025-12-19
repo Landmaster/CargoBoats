@@ -7,7 +7,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import javax.annotation.Nonnull;
 
 public class MotorboatUpgradeItemHandler extends ItemStackHandler {
-    private final EntityType<?> entityType;
+    public final EntityType<?> entityType;
 
     public MotorboatUpgradeItemHandler(EntityType<?> entityType, int slots) {
         super(slots);
