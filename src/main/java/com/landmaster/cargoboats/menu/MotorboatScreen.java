@@ -58,7 +58,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             // energy
-            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 5, topPos + 16);
+            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16);
         }
     }
 }

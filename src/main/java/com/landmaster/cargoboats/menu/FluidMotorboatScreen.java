@@ -46,6 +46,7 @@ public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboat
                 }
             });
             ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
+            ClientUtil.drawFluidBarTooltip(motorboat.tank.getFluid(), motorboat.tank.getCapacity(), guiGraphics, leftPos + 8, topPos + 47, mouseX, mouseY, font);
         }
         this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
@@ -57,8 +58,8 @@ public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboat
 
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof FluidMotorboat motorboat) {
-            // energy
-            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 5, topPos + 16);
+            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16);
+            ClientUtil.drawFluidBar(motorboat.tank.getFluid(), motorboat.tank.getCapacity(), guiGraphics, leftPos + 8, topPos + 47);
         }
     }
 }

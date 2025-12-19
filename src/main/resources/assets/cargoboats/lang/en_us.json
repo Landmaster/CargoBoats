@@ -17,6 +17,7 @@
   "cargoboats.configuration.motorboat_speed_upgrade_multipliers": "Speed upgrade multipliers",
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
+  "gui.cargoboats.fluid_indicator": "%s: %d mB / %d mB",
   "gui.cargoboats.next_stop": "Next: Stop %d",
   "gui.cargoboats.automation_button": "Enable/Disable Movement Automation",
   "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
