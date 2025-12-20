@@ -2,8 +2,13 @@ package com.landmaster.cargoboats.block;
 
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
@@ -17,6 +22,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class DockBlock extends BaseEntityBlock {
     public static final MapCodec<DockBlock> CODEC = simpleCodec(DockBlock::new);
@@ -25,6 +31,11 @@ public class DockBlock extends BaseEntityBlock {
     public DockBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.dock").withStyle(ChatFormatting.AQUA));
     }
 
     @Override

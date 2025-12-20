@@ -1,15 +1,18 @@
 package com.landmaster.cargoboats.item;
 
+import com.landmaster.cargoboats.Config;
 import com.landmaster.cargoboats.entity.Motorboat;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -24,16 +27,18 @@ import java.util.function.Predicate;
 public class MotorboatItem extends Item {
     private static final Predicate<Entity> ENTITY_PREDICATE = EntitySelector.NO_SPECTATORS.and(Entity::isPickable);
 
-    @FunctionalInterface
-    public interface BoatFactory {
-        Motorboat create(Level level, double x, double y, double z);
+    public MotorboatItem(Properties properties) {
+        super(properties);
     }
 
-    private final BoatFactory boatFactory;
+    public Motorboat createBoat(Level level, double x, double y, double z) {
+        return new Motorboat(level, x, y, z);
+    }
 
-    public MotorboatItem(BoatFactory boatFactory, Properties properties) {
-        super(properties);
-        this.boatFactory = boatFactory;
+    @Override
+    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.base_energy", Config.MOTORBOAT_BASE_ENERGY_USAGE.getAsInt())
+                .withStyle(ChatFormatting.AQUA));
     }
 
     public @Nonnull InteractionResultHolder<ItemStack> use(@Nonnull Level level, Player player, @Nonnull InteractionHand hand) {
@@ -57,7 +62,7 @@ public class MotorboatItem extends Item {
 
             if (hitresult.getType() == HitResult.Type.BLOCK) {
                 Vec3 hitResultLoc = hitresult.getLocation();
-                var boat = boatFactory.create(level, hitResultLoc.x, hitResultLoc.y, hitResultLoc.z);
+                var boat = createBoat(level, hitResultLoc.x, hitResultLoc.y, hitResultLoc.z);
                 boat.setYRot(player.getYRot());
                 if (!level.noCollision(boat, boat.getBoundingBox())) {
                     return InteractionResultHolder.fail(itemstack);

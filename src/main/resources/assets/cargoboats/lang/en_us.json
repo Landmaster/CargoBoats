@@ -38,6 +38,7 @@
   "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock, buoy, etc. to add it to a schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
+  "tooltip.cargoboats.motorboat_tracker": "Right-click a motorboat to link the handheld tracker to it",
   "tooltip.cargoboats.automation_enabled": "Movement Automation Enabled",
   "tooltip.cargoboats.automation_disabled": "Movement Automation Disabled",
   "tooltip.cargoboats.tracked_motorboat": "Motorboat tracked: %s",
@@ -45,5 +46,9 @@
   "tooltip.cargoboats.capacity_upgrade.1": "%d upgrade(s): %s",
   "tooltip.cargoboats.capacity_upgrade.2": "%d upgrade(s): %s or %s",
   "tooltip.cargoboats.capacity_upgrade.items": "%dx items",
-  "tooltip.cargoboats.capacity_upgrade.fluids": "%dmB fluid capacity"
+  "tooltip.cargoboats.capacity_upgrade.fluids": "%dmB fluid capacity",
+  "tooltip.cargoboats.motorboat.base_energy": "Base energy usage: %d RF/t",
+  "tooltip.cargoboats.motorboat.base_fluid": "Base fluid capacity: %dmB",
+  "tooltip.cargoboats.motorboat.buoy": "Used to guide motorboats (especially on longer paths); has no collision box",
+  "tooltip.cargoboats.motorboat.dock": "Interface with motorboat items, energy, and fluids"
 }

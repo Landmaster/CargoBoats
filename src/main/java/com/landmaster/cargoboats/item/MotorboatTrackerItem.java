@@ -34,6 +34,7 @@ public class MotorboatTrackerItem extends Item {
 
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_tracker").withStyle(ChatFormatting.AQUA));
         var uuid = stack.get(CargoBoats.TRACKED_MOTORBOAT);
         if (uuid != null) {
             tooltipComponents.add(Component.translatable("tooltip.cargoboats.tracked_motorboat", uuid.toString()).withStyle(ChatFormatting.YELLOW));

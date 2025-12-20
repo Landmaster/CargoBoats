@@ -111,9 +111,9 @@ public class CargoBoats {
     public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
     public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat",
-            p -> new MotorboatItem(Motorboat::new, p), new Item.Properties().stacksTo(1));
+            MotorboatItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<MotorboatItem> FLUID_MOTORBOAT_ITEM = ITEMS.registerItem("fluid_motorboat",
-            p -> new MotorboatItem(FluidMotorboat::new, p), new Item.Properties().stacksTo(1));
+            FluidMotorboatItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
