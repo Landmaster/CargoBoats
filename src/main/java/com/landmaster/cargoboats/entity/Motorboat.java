@@ -3,10 +3,12 @@ package com.landmaster.cargoboats.entity;
 import com.google.common.collect.ImmutableList;
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
+import com.landmaster.cargoboats.item.ExpandableItemStackHandler;
 import com.landmaster.cargoboats.item.MotorboatUpgradeItemHandler;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
+import com.landmaster.cargoboats.util.Util;
 import it.unimi.dsi.fastutil.PriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
@@ -41,7 +43,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableDouble;
@@ -78,11 +79,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private final LongSet chunkSet = new LongOpenHashSet();
     public static final int NUM_UPGRADES = 5;
     public final MotorboatUpgradeItemHandler upgradeHandler;
-    public final ItemStackHandler itemHandler;
+    public final ExpandableItemStackHandler itemHandler;
     public final IItemHandler combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
     private long stuckTime = STUCK_TIME_THRESHOLD;
+    private final int baseInvSize;
     //public boolean showDestination = false;
+
+    public static final int CONTAINER_SLOTS = 4;
 
     public final ContainerData containerData = new ContainerData() {
         @Override
@@ -90,6 +94,8 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             return switch (index) {
                 case 0 -> getId();
                 case 1 -> automationEnabled ? 1 : 0;
+                case 2 -> itemCapacityMultiplier();
+                case 3 -> baseInvSize == 0 ? 0 : Math.ceilDiv(itemHandler.getSlots(), baseInvSize);
                 default -> 0;
             };
         }
@@ -100,15 +106,16 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         @Override
         public int getCount() {
-            return 2;
+            return CONTAINER_SLOTS;
         }
     };
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level, int invSize) {
         super(entityType, level);
         this.upgradeHandler = new MotorboatUpgradeItemHandler(entityType, NUM_UPGRADES);
-        this.itemHandler = new ItemStackHandler(invSize);
+        this.itemHandler = new ExpandableItemStackHandler(invSize);
         this.combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
+        this.baseInvSize = invSize;
     }
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
@@ -227,13 +234,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     private double motorboatSpeed() {
         double res = Config.MOTORBOAT_BASE_SPEED.getAsDouble();
-        int numSpeedUpgrades = 0;
-        for (int i=0; i<upgradeHandler.getSlots(); ++i) {
-            var stack = upgradeHandler.getStackInSlot(i);
-            if (stack.is(CargoBoats.SPEED_UPGRADE)) {
-                numSpeedUpgrades += stack.getCount();
-            }
-        }
+        int numSpeedUpgrades = Util.countItem(upgradeHandler, CargoBoats.SPEED_UPGRADE.get());
         if (numSpeedUpgrades > 0) {
             var multipliers = Config.MOTORBOAT_SPEED_MULTIPLIERS.get();
             res *= multipliers.get(Math.min(numSpeedUpgrades - 1, multipliers.size()));
@@ -262,9 +263,21 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     }
 
+    private void adjustCapacity() {
+        itemHandler.setSize(baseInvSize * itemCapacityMultiplier());
+    }
+
+    public int itemCapacityMultiplier() {
+        int numUpgrades = Util.countItem(upgradeHandler, CargoBoats.CAPACITY_UPGRADE.get());
+        return numUpgrades > 0
+                ? Config.MOTORBOAT_ITEM_CAPACITY_MULTIPLIER.get().get(numUpgrades - 1)
+                : 1;
+    }
+
     @Override
     public void tick() {
         chunkLoad();
+        adjustCapacity();
 
         var motorActive = new MutableBoolean(false);
         var expectedSpeed2 = new MutableDouble(0);
@@ -511,7 +524,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     public int getMaxEnergyStored() {
-        return 100000;
+        return Config.MOTORBOAT_BASE_ENERGY_CAPACITY.getAsInt();
     }
 
     @Override

@@ -19,7 +19,7 @@ public class ClientUtil {
 
     public static void drawEnergyBar(int energy, int maxEnergy, GuiGraphics guiGraphics, int x, int y) {
         guiGraphics.blit(POWER_METER_UNACTIVATED, x, y, 0, 0, 128, 16, 128, 16);
-        guiGraphics.blit(POWER_METER, x, y, 0, 0, (int) (14 + 114L * energy / maxEnergy), 16, 128, 16);
+        guiGraphics.blit(POWER_METER, x, y, 0, 0, Math.clamp(14 + 114L * energy / maxEnergy, 14, 114), 16, 128, 16);
     }
 
     public static void drawEnergyBarTooltip(int energy, int maxEnergy, GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, Font font) {
@@ -48,7 +48,7 @@ public class ClientUtil {
         int color = attributes.getTintColor();
         var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidStill);
 
-        guiGraphics.blit(x, y, 0, (int)(64L * fluidStack.getAmount() / capacity), 12, sprite,
+        guiGraphics.blit(x, y, 0, Math.clamp(64L * fluidStack.getAmount() / capacity, 0, 64), 12, sprite,
                 FastColor.ARGB32.red(color) / 256.0f, FastColor.ARGB32.green(color) / 256.0f,
                 FastColor.ARGB32.blue(color) / 256.0f, FastColor.ARGB32.alpha(color) / 256.0f);
         guiGraphics.blit(FLUID_METER, x, y, 0, 0, 64, 12, 64, 32);

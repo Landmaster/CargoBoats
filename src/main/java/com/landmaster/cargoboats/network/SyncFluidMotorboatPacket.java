@@ -12,7 +12,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
 
-public record SyncFluidMotorboatPacket(int id, FluidStack fluidStack) implements CustomPacketPayload {
+public record SyncFluidMotorboatPacket(int id, FluidStack fluidStack, int capacity) implements CustomPacketPayload {
     public static final Type<SyncFluidMotorboatPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
             CargoBoats.MODID, "sync_fluid_motorboat"
     ));
@@ -20,6 +20,7 @@ public record SyncFluidMotorboatPacket(int id, FluidStack fluidStack) implements
     public static final StreamCodec<RegistryFriendlyByteBuf, SyncFluidMotorboatPacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, SyncFluidMotorboatPacket::id,
             FluidStack.OPTIONAL_STREAM_CODEC, SyncFluidMotorboatPacket::fluidStack,
+            ByteBufCodecs.INT, SyncFluidMotorboatPacket::capacity,
             SyncFluidMotorboatPacket::new
     );
 
@@ -27,6 +28,7 @@ public record SyncFluidMotorboatPacket(int id, FluidStack fluidStack) implements
         var entity = ctx.player().level().getEntity(id);
         if (entity instanceof FluidMotorboat fluidMotorboat) {
             fluidMotorboat.tank.setFluid(fluidStack);
+            fluidMotorboat.tank.setCapacity(capacity);
         }
     }
 

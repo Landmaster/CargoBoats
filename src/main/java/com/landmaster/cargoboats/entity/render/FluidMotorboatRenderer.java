@@ -42,7 +42,7 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat> {
         poseStack.pushPose();
         var fluidStack = p_entity.tank.getFluid();
         var capacity = p_entity.tank.getCapacity();
-        poseStack.translate(-0.56f, -0.23f, 0.37f);
+        poseStack.translate(-0.56f, -0.25f, 0.37f);
         poseStack.mulPose(Axis.XP.rotationDegrees(180));
         poseStack.scale(0.73f, 0.73f * Math.clamp((float)fluidStack.getAmount() / capacity, 0.0f, 1.0f), 0.73f);
 //        poseStack.scale(0.73f, 0.73f * Math.clamp((float)fluidStack.getAmount() / capacity, 0.0f, 1.0f), 0.73f);

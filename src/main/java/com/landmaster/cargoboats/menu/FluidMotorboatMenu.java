@@ -18,7 +18,7 @@ public class FluidMotorboatMenu extends AbstractContainerMenu {
     public FluidMotorboatMenu(int containerId, Inventory playerInventory) {
         this(CargoBoats.FLUID_MOTORBOAT_MENU.get(), containerId, playerInventory,
                 new MotorboatUpgradeItemHandler(CargoBoats.MOTORBOAT.get(), Motorboat.NUM_UPGRADES),
-                new SimpleContainerData(2));
+                new SimpleContainerData(Motorboat.CONTAINER_SLOTS));
     }
 
     public FluidMotorboatMenu(int containerId, Inventory playerInventory, FluidMotorboat motorboat) {

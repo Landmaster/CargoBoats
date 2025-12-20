@@ -1,8 +1,10 @@
 package com.landmaster.cargoboats.entity;
 
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.Config;
 import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
 import com.landmaster.cargoboats.network.SyncFluidMotorboatPacket;
+import com.landmaster.cargoboats.util.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
@@ -24,7 +26,7 @@ public class FluidMotorboat extends Motorboat {
 
     public FluidMotorboat(EntityType<? extends Motorboat> entityType, Level level) {
         super(entityType, level, 0);
-        tank = new FluidTank(64000);
+        tank = new FluidTank(Config.MOTORBOAT_BASE_FLUID_CAPACITY.getAsInt());
     }
 
     public FluidMotorboat(Level level, double x, double y, double z) {
@@ -60,15 +62,21 @@ public class FluidMotorboat extends Motorboat {
     @Override
     public void tick() {
         super.tick();
-        if (!level().isClientSide && !FluidStack.matches(oldFluidStack, tank.getFluid())) {
-            PacketDistributor.sendToPlayersTrackingEntity(this, new SyncFluidMotorboatPacket(getId(), tank.getFluid()));
-            oldFluidStack = tank.getFluid().copy();
+        if (!level().isClientSide) {
+            int capacityUpgradeCount = Util.countItem(upgradeHandler, CargoBoats.CAPACITY_UPGRADE.get());
+            int newCapacity = capacityUpgradeCount > 0 ? Config.MOTORBOAT_FLUID_CAPACITY.get().get(capacityUpgradeCount - 1)
+                    : Config.MOTORBOAT_BASE_FLUID_CAPACITY.getAsInt();
+            if (newCapacity != tank.getCapacity() || !FluidStack.matches(oldFluidStack, tank.getFluid())) {
+                tank.setCapacity(newCapacity);
+                PacketDistributor.sendToPlayersTrackingEntity(this, new SyncFluidMotorboatPacket(getId(), tank.getFluid(), tank.getCapacity()));
+                oldFluidStack = tank.getFluid().copy();
+            }
         }
     }
 
     @Override
     public void startSeenByPlayer(@Nonnull ServerPlayer serverPlayer) {
-        PacketDistributor.sendToPlayer(serverPlayer, new SyncFluidMotorboatPacket(getId(), tank.getFluid()));
+        PacketDistributor.sendToPlayer(serverPlayer, new SyncFluidMotorboatPacket(getId(), tank.getFluid(), tank.getCapacity()));
     }
 
     @Nonnull

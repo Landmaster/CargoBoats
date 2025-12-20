@@ -6,6 +6,7 @@
   "item.cargoboats.fluid_motorboat": "Fluid Motorboat",
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
   "item.cargoboats.speed_upgrade": "Speed Upgrade",
+  "item.cargoboats.capacity_upgrade": "Capacity Upgrade",
   "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
@@ -15,6 +16,10 @@
   "cargoboats.configuration.motorboat_max_search_distance": "Motorboat max search distance",
   "cargoboats.configuration.motorboat_base_speed": "Motorboat base speed",
   "cargoboats.configuration.motorboat_speed_upgrade_multipliers": "Speed upgrade multipliers",
+  "cargoboats.configruation.motorboat_base_energy_capacity": "Motorboat base energy capacity",
+  "cargoboats.configruation.motorboat_base_fluid_capacity": "Motorboat base fluid capacity",
+  "cargoboats.configruation.motorboat_capacity_upgrade_item_multipliers": "Capacity upgrade item multipliers",
+  "cargoboats.configruation.motorboat_capacity_upgrade_fluid": "Fluid capacities w/ upgrades",
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.fluid_indicator": "%s: %d mB / %d mB",
@@ -22,6 +27,7 @@
   "gui.cargoboats.automation_button": "Enable/Disable Movement Automation",
   "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
   "gui.cargoboats.page": "Page %d/%d",
+  "gui.cargoboats.page.asterisk": "Page %d/%d*",
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
   "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",

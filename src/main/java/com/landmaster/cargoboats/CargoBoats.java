@@ -6,17 +6,11 @@ import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.entity.Motorboat;
-import com.landmaster.cargoboats.item.MotorboatItem;
-import com.landmaster.cargoboats.item.MotorboatProgrammerItem;
-import com.landmaster.cargoboats.item.MotorboatTrackerItem;
-import com.landmaster.cargoboats.item.SpeedUpgradeItem;
+import com.landmaster.cargoboats.item.*;
 import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
-import com.landmaster.cargoboats.network.ModifySchedulePacket;
-import com.landmaster.cargoboats.network.SetAutomationPacket;
-import com.landmaster.cargoboats.network.SyncFluidMotorboatPacket;
-import com.landmaster.cargoboats.network.TrackMotorboatPacket;
+import com.landmaster.cargoboats.network.*;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -123,6 +117,7 @@ public class CargoBoats {
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
+    public static final DeferredItem<CapacityUpgradeItem> CAPACITY_UPGRADE = ITEMS.registerItem("capacity_upgrade", CapacityUpgradeItem::new);
     public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new,
             new Item.Properties().stacksTo(1));
 
@@ -146,6 +141,7 @@ public class CargoBoats {
                 output.accept(FLUID_MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
                 output.accept(SPEED_UPGRADE);
+                output.accept(CAPACITY_UPGRADE);
                 output.accept(MOTORBOAT_TRACKER);
             }).build());
 
@@ -219,6 +215,7 @@ public class CargoBoats {
         registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
         registrar.playToClient(TrackMotorboatPacket.TYPE, TrackMotorboatPacket.STREAM_CODEC, TrackMotorboatPacket::handle);
         registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
+        registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle);
     }
 
     @SubscribeEvent
