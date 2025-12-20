@@ -40,5 +40,10 @@
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
   "tooltip.cargoboats.automation_enabled": "Movement Automation Enabled",
   "tooltip.cargoboats.automation_disabled": "Movement Automation Disabled",
-  "tooltip.cargoboats.tracked_motorboat": "Motorboat tracked: %s"
+  "tooltip.cargoboats.tracked_motorboat": "Motorboat tracked: %s",
+  "tooltip.cargoboats.speed_upgrade": "%d upgrade(s): %sx speed",
+  "tooltip.cargoboats.capacity_upgrade.1": "%d upgrade(s): %s",
+  "tooltip.cargoboats.capacity_upgrade.2": "%d upgrade(s): %s or %s",
+  "tooltip.cargoboats.capacity_upgrade.items": "%dx items",
+  "tooltip.cargoboats.capacity_upgrade.fluids": "%dmB fluid capacity"
 }
