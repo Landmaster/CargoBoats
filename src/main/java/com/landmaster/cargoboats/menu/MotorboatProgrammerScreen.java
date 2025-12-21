@@ -2,14 +2,18 @@ package com.landmaster.cargoboats.menu;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.network.ModifySchedulePacket;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
+import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nonnull;
 
@@ -40,11 +44,14 @@ public class MotorboatProgrammerScreen extends AbstractContainerScreen<Motorboat
             super(x, y, 12, 12, Component.literal(delta == Integer.MIN_VALUE ? "" : delta >= 0 ? "+" : "-"), btn -> {}, DEFAULT_NARRATION);
             this.index = index;
             this.delta = delta;
+            setTooltip(Tooltip.create(Component.translatable("tooltip.cargoboats.programmer_adjust", delta, 10*delta)));
         }
 
         @Override
         public void onPress() {
-            PacketDistributor.sendToServer(new ModifySchedulePacket(adjustedIndex(), delta));
+            boolean isShifting = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)
+                    || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+            PacketDistributor.sendToServer(new ModifySchedulePacket(adjustedIndex(), isShifting ? 10*delta : delta));
         }
 
         @Override

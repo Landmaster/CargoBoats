@@ -50,5 +50,6 @@
   "tooltip.cargoboats.motorboat.base_energy": "Base energy usage: %d RF/t",
   "tooltip.cargoboats.motorboat.base_fluid": "Base fluid capacity: %dmB",
   "tooltip.cargoboats.motorboat.buoy": "Used to guide motorboats (especially on longer paths); has no collision box",
-  "tooltip.cargoboats.motorboat.dock": "Interface with motorboat items, energy, and fluids"
+  "tooltip.cargoboats.motorboat.dock": "Interface with motorboat items, energy, and fluids",
+  "tooltip.cargoboats.programmer_adjust": "Adjusts stop time by %d ticks (%d ticks if shift-clicked)"
 }
