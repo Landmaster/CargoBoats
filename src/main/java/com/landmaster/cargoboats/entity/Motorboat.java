@@ -38,6 +38,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -140,7 +141,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     protected float getSinglePassengerXOffset() {
-        return 0.15F;
+        return 0.35F;
     }
 
     @Override
@@ -608,9 +609,17 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     private boolean posValid(BlockPos pos) {
-        return canBoatInFluid(level().getFluidState(pos))
-                && level().getBlockState(pos).getCollisionShape(level(), pos).isEmpty()
-                && level().getBlockState(pos.above()).getCollisionShape(level(), pos.above()).isEmpty();
+        if (!canBoatInFluid(level().getFluidState(pos))) {
+            return false;
+        }
+        var curState = level().getBlockState(pos);
+        if (!curState.getCollisionShape(level(), pos).isEmpty()
+        || (curState.getBlock() instanceof BubbleColumnBlock
+                && curState.getOptionalValue(BubbleColumnBlock.DRAG_DOWN).orElse(false))) {
+            return false;
+        }
+        var aboveState = level().getBlockState(pos.above());
+        return aboveState.getCollisionShape(level(), pos.above()).isEmpty();
     }
 
     private boolean nodeValid(BlockPos point, Long2BooleanMap cache) {

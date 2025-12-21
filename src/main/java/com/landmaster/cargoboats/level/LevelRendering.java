@@ -3,10 +3,12 @@ package com.landmaster.cargoboats.level;
 import com.landmaster.cargoboats.CargoBoats;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -18,6 +20,7 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 
 @EventBusSubscriber
 public class LevelRendering {
@@ -48,11 +51,13 @@ public class LevelRendering {
     private static void onLevelRender(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_BLOCK_ENTITIES) {
             if (event.getCamera().getEntity() instanceof Player player) {
+                var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+                var cameraPos = event.getCamera().getPosition();
+
                 if (trackedPos != null) {
-                    var consumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.lines());
+                    var consumer = bufferSource.getBuffer(RenderType.lines());
                     var poseStack = event.getPoseStack();
                     var pose = poseStack.last();
-                    var cameraPos = event.getCamera().getPosition();
                     float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(true);
                     float startX = (float)(Mth.lerp(partialTick, player.xOld, player.position().x) - cameraPos.x);
                     float startY = (float)(Mth.lerp(partialTick, player.yOld, player.position().y) - cameraPos.y + player.getEyeHeight() * 0.5);
@@ -65,6 +70,30 @@ public class LevelRendering {
                         consumer.addVertex(pose, endPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
                     }
                 }
+
+                Arrays.stream(InteractionHand.values())
+                        .map(player::getItemInHand)
+                        .filter(stack -> stack.is(CargoBoats.MOTORBOAT_PROGRAMMER))
+                        .findFirst()
+                        .ifPresent(programmer -> {
+                            var schedule = programmer.get(CargoBoats.MOTORBOAT_SCHEDULE);
+                            var dockChecked = new LongOpenHashSet();
+                            for (var entry: schedule.entries()) {
+                                if (entry.dimension() == player.level().dimension()
+                                        && !dockChecked.contains(entry.dock().asLong())
+                                        && player.level().isLoaded(entry.dock())) {
+                                    dockChecked.add(entry.dock().asLong());
+                                    renderShape(
+                                            event.getPoseStack(),
+                                            bufferSource.getBuffer(RenderType.lines()),
+                                            Shapes.create(AABB.encapsulatingFullBlocks(entry.dock(), entry.dock())),
+                                            -cameraPos.x,
+                                            -cameraPos.y,
+                                            -cameraPos.z,
+                                            1.0f, 0.0f, 0.0f, 1.0f);
+                                }
+                            }
+                        });
             }
         }
     }
