@@ -7,6 +7,7 @@
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
   "item.cargoboats.speed_upgrade": "Speed Upgrade",
   "item.cargoboats.capacity_upgrade": "Capacity Upgrade",
+  "item.cargoboats.lava_upgrade": "Lava Upgrade",
   "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",

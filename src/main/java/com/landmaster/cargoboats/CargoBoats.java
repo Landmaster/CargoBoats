@@ -111,13 +111,14 @@ public class CargoBoats {
     public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
     public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat",
-            MotorboatItem::new, new Item.Properties().stacksTo(1));
+            MotorboatItem::new, new Item.Properties().stacksTo(1).fireResistant());
     public static final DeferredItem<MotorboatItem> FLUID_MOTORBOAT_ITEM = ITEMS.registerItem("fluid_motorboat",
-            FluidMotorboatItem::new, new Item.Properties().stacksTo(1));
+            FluidMotorboatItem::new, new Item.Properties().stacksTo(1).fireResistant());
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
             MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
     public static final DeferredItem<CapacityUpgradeItem> CAPACITY_UPGRADE = ITEMS.registerItem("capacity_upgrade", CapacityUpgradeItem::new);
+    public static final DeferredItem<LavaUpgradeItem> LAVA_UPGRADE = ITEMS.registerItem("lava_upgrade", LavaUpgradeItem::new, new Item.Properties().fireResistant());
     public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new,
             new Item.Properties().stacksTo(1));
 
@@ -142,6 +143,7 @@ public class CargoBoats {
                 output.accept(MOTORBOAT_PROGRAMMER);
                 output.accept(SPEED_UPGRADE);
                 output.accept(CAPACITY_UPGRADE);
+                output.accept(LAVA_UPGRADE);
                 output.accept(MOTORBOAT_TRACKER);
             }).build());
 

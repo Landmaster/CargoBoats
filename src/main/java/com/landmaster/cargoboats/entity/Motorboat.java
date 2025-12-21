@@ -40,9 +40,13 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -74,6 +78,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     );
     private static final EntityDataAccessor<Integer> ENERGY = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> CLIENT_MOTORBOAT_SPEED = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> LAVA_UPGRADE_ACTIVE = SynchedEntityData.defineId(Motorboat.class, EntityDataSerializers.BOOLEAN);
     private List<BlockPos> path = ImmutableList.of();
     private int dockTime = 0;
     private boolean automationEnabled = true;
@@ -157,6 +162,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         builder.define(NEXT_STOP_INDEX, 0);
         builder.define(ENERGY, 0);
         builder.define(CLIENT_MOTORBOAT_SPEED, 1.0f);
+        builder.define(LAVA_UPGRADE_ACTIVE, true);
     }
 
     @Override
@@ -185,6 +191,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     public MotorboatSchedule getMotorboatSchedule() {
         return getEntityData().get(MOTORBOAT_SCHEDULE);
+    }
+
+    public boolean lavaUpgradeActive() {
+        return getEntityData().get(LAVA_UPGRADE_ACTIVE);
     }
 
     @Nonnull
@@ -326,6 +336,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         if (!level().isClientSide && !isControlledByLocalInstance()) {
             getEntityData().set(CLIENT_MOTORBOAT_SPEED, (float)relativeMotorboatSpeed());
+        }
+        if (!level().isClientSide) {
+            getEntityData().set(LAVA_UPGRADE_ACTIVE, Util.countItem(upgradeHandler, CargoBoats.LAVA_UPGRADE.get()) > 0);
         }
 
         var motorActive = new MutableBoolean(false);
@@ -589,6 +602,11 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public boolean isAlwaysTicking() {
         return true;
+    }
+
+    @Override
+    public boolean fireImmune() {
+        return lavaUpgradeActive() || super.fireImmune();
     }
 
     private record PathfindPQEntry(double cost, long point) implements Comparable<PathfindPQEntry> {
