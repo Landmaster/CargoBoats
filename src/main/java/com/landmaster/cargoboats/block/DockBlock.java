@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class DockBlock extends BaseEntityBlock {
+public class DockBlock extends BaseEntityBlock implements WrenchInteractable {
     public static final MapCodec<DockBlock> CODEC = simpleCodec(DockBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 

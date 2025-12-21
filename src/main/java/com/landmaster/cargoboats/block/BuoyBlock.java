@@ -17,7 +17,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class BuoyBlock extends Block {
+public class BuoyBlock extends Block implements WrenchInteractable {
     protected static final VoxelShape AABB = Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0);
 
     public BuoyBlock(Properties properties) {

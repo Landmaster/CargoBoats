@@ -97,7 +97,11 @@ public class CargoBoats {
             "tracked_motorboat", builder -> builder.networkSynchronized(UUIDUtil.STREAM_CODEC).persistent(UUIDUtil.CODEC));
 
     public static final DeferredBlock<DockBlock> DOCK = BLOCKS.registerBlock("dock", DockBlock::new,
-            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS));
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(2.0F, 3.0F)
+                    .sound(SoundType.WOOD));
     public static final DeferredBlock<BuoyBlock> BUOY = BLOCKS.registerBlock("buoy", BuoyBlock::new,
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_RED)

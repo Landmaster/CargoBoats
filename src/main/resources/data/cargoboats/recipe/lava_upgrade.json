@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "tag": "c:obsidians/crying"
+    },
+    "r": {
+      "tag": "c:rods/blaze"
+    },
+    "m": {
+      "item": "minecraft:magma_cream"
+    },
+    "w": {
+      "item": "minecraft:warped_fungus_on_a_stick"
+    }
+  },
+  "pattern": [
+    "rcm",
+    "cwc",
+    "mcr"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:lava_upgrade"
+  }
+}

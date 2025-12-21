@@ -53,5 +53,6 @@
   "tooltip.cargoboats.motorboat.base_fluid": "Base fluid capacity: %dmB",
   "tooltip.cargoboats.motorboat.buoy": "Used to guide motorboats (especially on longer paths); has no collision box",
   "tooltip.cargoboats.motorboat.dock": "Interface with motorboat items, energy, and fluids",
-  "tooltip.cargoboats.programmer_adjust": "Adjusts stop time by %d ticks (%d ticks if shift-clicked)"
+  "tooltip.cargoboats.programmer_adjust": "Adjusts stop time by %d ticks (%d ticks if shift-clicked)",
+  "tooltip.cargoboats.lava_upgrade": "Allows motorboats to be driven in lava. (This upgrade, as well as dropped motorboat items regardless of this upgrade, are not destroyed by lava.)"
 }
