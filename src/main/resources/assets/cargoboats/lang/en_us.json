@@ -30,6 +30,7 @@
   "gui.cargoboats.page.asterisk": "Page %d/%d*",
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
+  "message.cargoboats.dock_added.distance": "(%sm from previous node)",
   "message.cargoboats.motorboat_programmed": "Motorboat successfully programmed",
   "message.cargoboats.motorboat_tracked": "Motorboat tracked: %s",
 

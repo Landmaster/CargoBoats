@@ -15,6 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,17 +39,25 @@ public class MotorboatProgrammerItem extends Item {
         var player = context.getPlayer();
         var cap = level.getCapability(CargoBoats.MOTORBOAT_PATHFINDING_NODE, pos);
         if (cap != null) {
-            var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
+            var prevSchedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);
             stack.set(CargoBoats.MOTORBOAT_SCHEDULE,
                     new MotorboatSchedule(
                             Stream.concat(
-                                    schedule.entries().stream(),
+                                    prevSchedule.entries().stream(),
                                     Stream.of(new MotorboatSchedule.Entry(pos, cap.defaultStopTime(), level.dimension()))
                             ).collect(Collectors.toList())
                     )
             );
             if (level.isClientSide && player != null) {
                 player.displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
+                if (!prevSchedule.entries().isEmpty()) {
+                    var lastEntry = prevSchedule.entries().getLast();
+                    if (lastEntry.dimension() == level.dimension()) {
+                        var lastPos = prevSchedule.entries().getLast().dock();
+                        player.displayClientMessage(Component.translatable("message.cargoboats.dock_added.distance",
+                                new DecimalFormat("0.0").format(Math.sqrt(lastPos.distSqr(pos)))), false);
+                    }
+                }
             }
             return InteractionResult.SUCCESS;
         }
