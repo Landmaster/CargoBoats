@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
@@ -22,7 +23,7 @@ import org.joml.Vector3f;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
-@EventBusSubscriber
+@EventBusSubscriber(Dist.CLIENT)
 public class LevelRendering {
     @Nullable
     public static Vector3f trackedPos = null;
