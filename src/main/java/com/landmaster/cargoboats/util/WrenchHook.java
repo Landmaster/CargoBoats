@@ -23,8 +23,13 @@ public class WrenchHook {
         if (event.getItemStack().is(WRENCH_TAG)) {
             var pos = event.getPos();
             var state = event.getLevel().getBlockState(pos);
-            if (event.getEntity().isShiftKeyDown() && state.getBlock() instanceof WrenchInteractable wrenchInteractable) {
-                var result = wrenchInteractable.disassemble(event.getLevel(), event.getPos(), event.getEntity());
+            if (state.getBlock() instanceof WrenchInteractable wrenchInteractable) {
+                var result = InteractionResult.PASS;
+                if (event.getEntity().isShiftKeyDown()) {
+                    result = wrenchInteractable.disassemble(event.getLevel(), event.getPos(), event.getEntity());
+                } else {
+                    result = wrenchInteractable.rotate(event.getLevel(), event.getPos(), event.getEntity());
+                }
                 if (result != InteractionResult.PASS) {
                     event.setCanceled(true);
                     event.setCancellationResult(result);

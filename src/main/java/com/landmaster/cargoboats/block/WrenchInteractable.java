@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Rotation;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 
@@ -19,5 +20,15 @@ public interface WrenchInteractable {
             level.destroyBlock(pos, false);
         }
         return canInsert ? InteractionResult.sidedSuccess(level.isClientSide) : InteractionResult.FAIL;
+    }
+
+    default InteractionResult rotate(Level level, BlockPos pos, Player player) {
+        var blockState = level.getBlockState(pos);
+        var newBlockState = blockState.rotate(level, pos, Rotation.CLOCKWISE_90);
+        if (newBlockState != blockState) {
+            level.setBlockAndUpdate(pos, newBlockState);
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return InteractionResult.PASS;
     }
 }
