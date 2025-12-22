@@ -25,7 +25,7 @@ public class WrenchHook {
             var state = event.getLevel().getBlockState(pos);
             if (state.getBlock() instanceof WrenchInteractable wrenchInteractable) {
                 var result = InteractionResult.PASS;
-                if (event.getEntity().isShiftKeyDown()) {
+                if (event.getEntity().isSecondaryUseActive()) {
                     result = wrenchInteractable.disassemble(event.getLevel(), event.getPos(), event.getEntity());
                 } else {
                     result = wrenchInteractable.rotate(event.getLevel(), event.getPos(), event.getEntity());

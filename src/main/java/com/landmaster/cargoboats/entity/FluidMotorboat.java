@@ -38,14 +38,14 @@ public class FluidMotorboat extends Motorboat {
     }
 
     @Override
-    protected void addAdditionalSaveData(@Nonnull CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
+    public void addMotorboatSaveData(CompoundTag compound) {
+        super.addMotorboatSaveData(compound);
         compound.put("FluidTank", tank.writeToNBT(registryAccess(), new CompoundTag()));
     }
 
     @Override
-    protected void readAdditionalSaveData(@Nonnull CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
+    public void readMotorboatSaveData(CompoundTag compound) {
+        super.readMotorboatSaveData(compound);
         tank.readFromNBT(registryAccess(), compound.getCompound("FluidTank"));
     }
 

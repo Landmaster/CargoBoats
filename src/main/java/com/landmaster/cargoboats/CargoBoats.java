@@ -12,9 +12,10 @@ import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.network.*;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
-import net.minecraft.core.BlockPos;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceLocation;
@@ -24,13 +25,9 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -43,14 +40,11 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.energy.EmptyEnergyStorage;
-import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
 import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.*;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -62,6 +56,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -95,6 +90,10 @@ public class CargoBoats {
             builder.networkSynchronized(MotorboatSchedule.STREAM_CODEC).persistent(MotorboatSchedule.CODEC));
     public static final Supplier<DataComponentType<UUID>> TRACKED_MOTORBOAT = DATA_COMPONENTS.registerComponentType(
             "tracked_motorboat", builder -> builder.networkSynchronized(UUIDUtil.STREAM_CODEC).persistent(UUIDUtil.CODEC));
+    public static final Supplier<DataComponentType<Boolean>> MOTORBOAT_HAS_DATA = DATA_COMPONENTS.registerComponentType(
+            "motorboat_has_data", builder -> builder.networkSynchronized(ByteBufCodecs.BOOL).persistent(Codec.BOOL));
+    public static final Supplier<DataComponentType<CompoundTag>> MOTORBOAT_SAVE_DATA = DATA_COMPONENTS.registerComponentType("motorboat_save_data", builder ->
+            builder.persistent(CompoundTag.CODEC));
 
     public static final DeferredBlock<DockBlock> DOCK = BLOCKS.registerBlock("dock", DockBlock::new,
             BlockBehaviour.Properties.of()

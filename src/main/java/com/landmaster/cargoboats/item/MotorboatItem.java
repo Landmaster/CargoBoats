@@ -1,5 +1,6 @@
 package com.landmaster.cargoboats.item;
 
+import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
 import com.landmaster.cargoboats.entity.Motorboat;
 import net.minecraft.ChatFormatting;
@@ -39,6 +40,9 @@ public class MotorboatItem extends Item {
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
         tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.base_energy", Config.MOTORBOAT_BASE_ENERGY_USAGE.getAsInt())
                 .withStyle(ChatFormatting.AQUA));
+        if (stack.getOrDefault(CargoBoats.MOTORBOAT_HAS_DATA, false)) {
+            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.has_data").withStyle(ChatFormatting.YELLOW));
+        }
     }
 
     public @Nonnull InteractionResultHolder<ItemStack> use(@Nonnull Level level, Player player, @Nonnull InteractionHand hand) {
@@ -69,6 +73,10 @@ public class MotorboatItem extends Item {
                 } else {
                     if (!level.isClientSide) {
                         level.addFreshEntity(boat);
+                        var tag = itemstack.get(CargoBoats.MOTORBOAT_SAVE_DATA);
+                        if (tag != null) {
+                            boat.readMotorboatSaveData(tag);
+                        }
                         level.gameEvent(player, GameEvent.ENTITY_PLACE, hitresult.getLocation());
                         itemstack.consume(1, player);
                     }

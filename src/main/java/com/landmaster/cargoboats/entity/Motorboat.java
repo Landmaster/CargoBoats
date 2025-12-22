@@ -9,6 +9,7 @@ import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.sound.MotorboatSoundInstance;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import com.landmaster.cargoboats.util.Util;
+import com.landmaster.cargoboats.util.WrenchHook;
 import it.unimi.dsi.fastutil.PriorityQueue;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
@@ -35,20 +36,19 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
@@ -87,7 +87,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public static final int NUM_UPGRADES = 5;
     public final MotorboatUpgradeItemHandler upgradeHandler;
     public final ExpandableItemStackHandler itemHandler;
-    public final IItemHandler combinedHandler;
+    public final IItemHandlerModifiable combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
     private long stuckTime = STUCK_TIME_THRESHOLD;
     private final int baseInvSize;
@@ -137,6 +137,15 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         this.zo = z;
     }
 
+    public ItemStack getWrenchDrop() {
+        var stack = new ItemStack(getDropItem());
+        var tag = new CompoundTag();
+        addMotorboatSaveData(tag);
+        stack.set(CargoBoats.MOTORBOAT_SAVE_DATA, tag);
+        stack.set(CargoBoats.MOTORBOAT_HAS_DATA, true);
+        return stack;
+    }
+
     public void setAutomationEnabled(boolean newValue) {
         this.automationEnabled = newValue;
         if (!automationEnabled) {
@@ -168,6 +177,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     protected void readAdditionalSaveData(@Nonnull CompoundTag compound) {
         super.readAdditionalSaveData(compound);
+        readMotorboatSaveData(compound);
+    }
+
+    public void readMotorboatSaveData(CompoundTag compound) {
         getEntityData().set(ENERGY, compound.getInt("EnergyStorage"));
         getEntityData().set(MOTORBOAT_SCHEDULE, MotorboatSchedule.CODEC.parse(NbtOps.INSTANCE, compound.get("MotorboatSchedule")).getOrThrow());
         getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
@@ -180,6 +193,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     protected void addAdditionalSaveData(@Nonnull CompoundTag compound) {
         super.addAdditionalSaveData(compound);
+        addMotorboatSaveData(compound);
+    }
+
+    public void addMotorboatSaveData(CompoundTag compound) {
         compound.putInt("EnergyStorage", getEnergyStored());
         compound.put("MotorboatSchedule", MotorboatSchedule.CODEC.encodeStart(NbtOps.INSTANCE, getMotorboatSchedule()).getOrThrow());
         compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
@@ -220,13 +237,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             dropContents();
         }
     }
+
     public int energyConsumption() {
         return Config.MOTORBOAT_BASE_ENERGY_USAGE.getAsInt();
     }
 
     @Override
     public void remove(@Nonnull RemovalReason reason) {
-        if (!this.level().isClientSide && reason.shouldDestroy()) {
+        if (!this.level().isClientSide && reason == RemovalReason.KILLED) {
             dropContents();
         }
 
@@ -496,6 +514,19 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand) {
         var stack = player.getItemInHand(hand);
+
+        if (stack.is(WrenchHook.WRENCH_TAG) && player.isSecondaryUseActive()) {
+            var wrenchDrop = getWrenchDrop();
+            var invWrapper = new PlayerMainInvWrapper(player.getInventory());
+
+            if (ItemHandlerHelper.insertItem(invWrapper, wrenchDrop, true).isEmpty()) {
+                ItemHandlerHelper.insertItem(invWrapper, wrenchDrop, false);
+                discard();
+                return InteractionResult.SUCCESS;
+            } else {
+                return InteractionResult.FAIL;
+            }
+        }
 
         if (stack.has(CargoBoats.MOTORBOAT_SCHEDULE)) {
             var schedule = stack.get(CargoBoats.MOTORBOAT_SCHEDULE);

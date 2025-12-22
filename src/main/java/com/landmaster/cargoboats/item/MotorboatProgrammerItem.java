@@ -1,7 +1,6 @@
 package com.landmaster.cargoboats.item;
 
 import com.landmaster.cargoboats.CargoBoats;
-import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import net.minecraft.ChatFormatting;
