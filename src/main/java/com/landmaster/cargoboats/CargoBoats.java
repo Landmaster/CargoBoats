@@ -3,10 +3,12 @@ package com.landmaster.cargoboats;
 import com.landmaster.cargoboats.block.BuoyBlock;
 import com.landmaster.cargoboats.block.DockBlock;
 import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
+import com.landmaster.cargoboats.block.entity.BuoyBlockEntity;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.*;
+import com.landmaster.cargoboats.menu.BuoyMenu;
 import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
@@ -156,9 +158,13 @@ public class CargoBoats {
             "fluid_motorboat", () -> new MenuType<>(FluidMotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final Supplier<MenuType<MotorboatProgrammerMenu>> MOTORBOAT_PROGRAMMER_MENU = MENU_TYPES.register(
             "motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
+    public static final Supplier<MenuType<BuoyMenu>> BUOY_MENU = MENU_TYPES.register(
+            "buoy", () -> IMenuTypeExtension.create(BuoyMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
+    public static final Supplier<BlockEntityType<BuoyBlockEntity>> BUOY_TE = BLOCK_ENTITY_TYPES.register("buoy",
+            () -> BlockEntityType.Builder.of(BuoyBlockEntity::new, BUOY.get()).build(null));
 
     public static final BlockCapability<MotorboatPathfindingNode, Void> MOTORBOAT_PATHFINDING_NODE = BlockCapability.createVoid(
             ResourceLocation.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class
@@ -205,7 +211,7 @@ public class CargoBoats {
                 .orElse(EmptyFluidHandler.INSTANCE));
 
         event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, DOCK_TE.get(), (te, ctx) -> te);
-        event.registerBlock(MOTORBOAT_PATHFINDING_NODE, (level, pos, state, blockEntity, context) -> new BuoyBlock.PathfindingNode(level, pos), BUOY.get());
+        event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, BUOY_TE.get(), (te, ctx) -> te);
     }
 
     @SubscribeEvent
@@ -221,6 +227,7 @@ public class CargoBoats {
         registrar.playToClient(TrackMotorboatPacket.TYPE, TrackMotorboatPacket.STREAM_CODEC, TrackMotorboatPacket::handle);
         registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
         registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle);
+        registrar.playBidirectional(SyncBuoyPacket.TYPE, SyncBuoyPacket.STREAM_CODEC, SyncBuoyPacket::handle);
     }
 
     @SubscribeEvent

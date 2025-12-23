@@ -1,27 +1,44 @@
 package com.landmaster.cargoboats.block;
 
-import it.unimi.dsi.fastutil.Pair;
+import com.landmaster.cargoboats.block.entity.BuoyBlockEntity;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.monster.piglin.PiglinAi;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class BuoyBlock extends Block implements WrenchInteractable {
+public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
     protected static final VoxelShape AABB = Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0);
 
     public BuoyBlock(Properties properties) {
         super(properties);
+    }
+
+    @Nonnull
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return simpleCodec(BuoyBlock::new);
     }
 
     @Override
@@ -35,20 +52,29 @@ public class BuoyBlock extends Block implements WrenchInteractable {
         return AABB;
     }
 
-    public record PathfindingNode(Level level, BlockPos pos) implements MotorboatPathfindingNode {
-        @Override
-        public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
-            return Pair.of(pos.offset(0, -1, 0), pos.offset(0, 1, 0));
-        }
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+        return new BuoyBlockEntity(pos, state);
+    }
 
-        @Override
-        public boolean doBoatHorn() {
-            return false;
-        }
+    @Nonnull
+    @Override
+    protected RenderShape getRenderShape(@Nonnull BlockState state) {
+        return RenderShape.MODEL;
+    }
 
-        @Override
-        public int defaultStopTime() {
-            return 0;
+    @Nonnull
+    @Override
+    protected InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hitResult) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        } else {
+            BlockEntity blockentity = level.getBlockEntity(pos);
+            if (blockentity instanceof BuoyBlockEntity buoyBlockEntity) {
+                player.openMenu(buoyBlockEntity, pos);
+            }
+            return InteractionResult.CONSUME;
         }
     }
 }

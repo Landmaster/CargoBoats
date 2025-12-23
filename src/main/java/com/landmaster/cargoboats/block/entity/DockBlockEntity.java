@@ -37,6 +37,7 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
                     dockBlockEntity.dockedMotorboatId = boatToDock.get().getUUID();
                     dockBlockEntity.dockedMotorboat = boatToDock.get();
                     dockBlockEntity.invalidateCapabilities();
+                    dockBlockEntity.setChanged();
                 }
             } else {
                 boolean invalidateCaps = false;
@@ -57,6 +58,7 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
                 }
                 if (invalidateCaps) {
                     dockBlockEntity.invalidateCapabilities();
+                    dockBlockEntity.setChanged();
                 }
             }
         }
