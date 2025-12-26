@@ -44,6 +44,8 @@ import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -349,6 +351,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     public void tick() {
+        this.oldStatus = this.status;
+        this.status = this.getStatus();
+
         chunkLoad();
         adjustCapacity();
 
@@ -402,8 +407,6 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             }
         }
 
-        this.oldStatus = this.status;
-        this.status = this.getStatus();
         if (this.status != Boat.Status.UNDER_WATER && this.status != Boat.Status.UNDER_FLOWING_WATER) {
             this.outOfControlTicks = 0.0F;
         } else {
@@ -481,7 +484,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             getEntityData().set(MOTOR_ACTIVE, motorActive.booleanValue());
 
             if (automationEnabled && isControlledByLocalInstance()) {
-                if (position().distanceToSqr(xo, yo, zo) < 0.2 * 0.2 * expectedSpeed2.getValue()) {
+                if (path.isEmpty() || position().distanceToSqr(xo, yo, zo) < 0.2 * 0.2 * expectedSpeed2.getValue()) {
                     ++stuckTime;
                 } else {
                     stuckTime = 0;
@@ -657,25 +660,34 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         return 1.5 * Math.sqrt(cand);
     }
 
-    private boolean posValid(BlockPos pos) {
-        if (!canBoatInFluid(level().getFluidState(pos))) {
-            return false;
+    private boolean posValid(BlockPos pos, boolean surroundingBlock) {
+        if (status == Status.IN_WATER || status == Status.UNDER_WATER || status == Status.UNDER_FLOWING_WATER) {
+            if (!surroundingBlock && !canBoatInFluid(level().getFluidState(pos))) {
+                return false;
+            }
+            var curState = level().getBlockState(pos);
+            if (!curState.getCollisionShape(level(), pos, CollisionContext.of(this)).isEmpty()
+                    || (curState.getBlock() instanceof BubbleColumnBlock
+                    && curState.getOptionalValue(BubbleColumnBlock.DRAG_DOWN).orElse(false))) {
+                return false;
+            }
+            var aboveState = level().getBlockState(pos.above());
+            return aboveState.getCollisionShape(level(), pos.above(), CollisionContext.of(this)).isEmpty();
+        } else {
+            var curState = level().getBlockState(pos);
+            if (!surroundingBlock && !curState.isCollisionShapeFullBlock(level(), pos)) {
+                return false;
+            }
+            var aboveState = level().getBlockState(pos.above());
+            return aboveState.getCollisionShape(level(), pos.above(), CollisionContext.of(this)).isEmpty();
         }
-        var curState = level().getBlockState(pos);
-        if (!curState.getCollisionShape(level(), pos).isEmpty()
-        || (curState.getBlock() instanceof BubbleColumnBlock
-                && curState.getOptionalValue(BubbleColumnBlock.DRAG_DOWN).orElse(false))) {
-            return false;
-        }
-        var aboveState = level().getBlockState(pos.above());
-        return aboveState.getCollisionShape(level(), pos.above()).isEmpty();
     }
 
     private boolean nodeValid(BlockPos point, Long2BooleanMap cache) {
         return cache.computeIfAbsent(point.asLong(), p -> BlockPos.betweenClosedStream(
                 new BlockPos(point.getX() - 1, point.getY(), point.getZ() - 1),
                 new BlockPos(point.getX() + 1, point.getY(), point.getZ() + 1)
-        ).allMatch(this::posValid));
+        ).allMatch(pos -> posValid(pos, !pos.equals(point))));
     }
 
     private List<BlockPos> getNeighbors(BlockPos point, Long2BooleanMap cache) {
@@ -792,7 +804,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     private BlockPos positionForPathfinding() {
-        return BlockPos.containing(position());
+        return BlockPos.containing(position().subtract(0, 0.2, 0));
     }
 
     private Optional<Vec3> targetLocation() {

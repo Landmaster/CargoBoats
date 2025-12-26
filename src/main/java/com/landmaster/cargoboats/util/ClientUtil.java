@@ -19,7 +19,7 @@ public class ClientUtil {
 
     public static void drawEnergyBar(int energy, int maxEnergy, GuiGraphics guiGraphics, int x, int y) {
         guiGraphics.blit(POWER_METER_UNACTIVATED, x, y, 0, 0, 128, 16, 128, 16);
-        guiGraphics.blit(POWER_METER, x, y, 0, 0, Math.clamp(14 + 114L * energy / maxEnergy, 14, 114), 16, 128, 16);
+        guiGraphics.blit(POWER_METER, x, y, 0, 0, Math.clamp(14 + 114L * energy / maxEnergy, 14, 128), 16, 128, 16);
     }
 
     public static void drawEnergyBarTooltip(int energy, int maxEnergy, GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, Font font) {
@@ -37,20 +37,18 @@ public class ClientUtil {
 
     public static void drawFluidBar(FluidStack fluidStack, int capacity, GuiGraphics guiGraphics, int x, int y) {
         IClientFluidTypeExtensions attributes = IClientFluidTypeExtensions.of(fluidStack.getFluid());
-        if(attributes == null) {
-            return;
-        }
-        ResourceLocation fluidStill = attributes.getStillTexture(fluidStack);
-        if(fluidStill == null) {
-            return;
+        if (attributes != null) {
+            ResourceLocation fluidStill = attributes.getStillTexture(fluidStack);
+            if (fluidStill != null) {
+                int color = attributes.getTintColor();
+                var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidStill);
+
+                guiGraphics.blit(x, y, 0, Math.clamp(64L * fluidStack.getAmount() / capacity, 0, 64), 12, sprite,
+                        FastColor.ARGB32.red(color) / 256.0f, FastColor.ARGB32.green(color) / 256.0f,
+                        FastColor.ARGB32.blue(color) / 256.0f, FastColor.ARGB32.alpha(color) / 256.0f);
+            }
         }
 
-        int color = attributes.getTintColor();
-        var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(fluidStill);
-
-        guiGraphics.blit(x, y, 0, Math.clamp(64L * fluidStack.getAmount() / capacity, 0, 64), 12, sprite,
-                FastColor.ARGB32.red(color) / 256.0f, FastColor.ARGB32.green(color) / 256.0f,
-                FastColor.ARGB32.blue(color) / 256.0f, FastColor.ARGB32.alpha(color) / 256.0f);
         guiGraphics.blit(FLUID_METER, x, y, 0, 0, 64, 12, 64, 32);
     }
 }

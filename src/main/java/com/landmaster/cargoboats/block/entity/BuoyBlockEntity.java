@@ -41,7 +41,7 @@ public class BuoyBlockEntity extends BlockEntity implements MotorboatPathfinding
 
     @Override
     public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
-        return Pair.of(worldPosition.offset(offsetX, -1, offsetZ), worldPosition.offset(offsetX, 1, offsetZ));
+        return Pair.of(worldPosition.offset(offsetX, -2, offsetZ), worldPosition.offset(offsetX, 2, offsetZ));
     }
 
     @Override
