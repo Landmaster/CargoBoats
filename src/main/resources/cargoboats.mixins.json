@@ -2,7 +2,7 @@
   "required": true,
   "package": "com.landmaster.cargoboats.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["FluidTypeMixin"],
+  "mixins": ["FluidTypeMixin", "FishingHookPredicateMixin"],
   "injectors": {
     "defaultRequire": 1
   },

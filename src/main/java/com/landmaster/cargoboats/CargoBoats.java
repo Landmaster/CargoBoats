@@ -58,7 +58,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -124,6 +123,7 @@ public class CargoBoats {
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
     public static final DeferredItem<CapacityUpgradeItem> CAPACITY_UPGRADE = ITEMS.registerItem("capacity_upgrade", CapacityUpgradeItem::new);
     public static final DeferredItem<LavaUpgradeItem> LAVA_UPGRADE = ITEMS.registerItem("lava_upgrade", LavaUpgradeItem::new, new Item.Properties().fireResistant());
+    public static final DeferredItem<FishingUpgradeItem> FISHING_UPGRADE = ITEMS.registerItem("fishing_upgrade", FishingUpgradeItem::new);
     public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new,
             new Item.Properties().stacksTo(1));
 
@@ -149,6 +149,7 @@ public class CargoBoats {
                 output.accept(SPEED_UPGRADE);
                 output.accept(CAPACITY_UPGRADE);
                 output.accept(LAVA_UPGRADE);
+                output.accept(FISHING_UPGRADE);
                 output.accept(MOTORBOAT_TRACKER);
             }).build());
 
@@ -165,6 +166,13 @@ public class CargoBoats {
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
     public static final Supplier<BlockEntityType<BuoyBlockEntity>> BUOY_TE = BLOCK_ENTITY_TYPES.register("buoy",
             () -> BlockEntityType.Builder.of(BuoyBlockEntity::new, BUOY.get()).build(null));
+
+    public static final Supplier<AttachmentType<Long>> OVERFISHING_TICKS = ATTACHMENT_TYPES.register("overfishing_ticks",
+            () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
+    public static final Supplier<AttachmentType<Long>> OVERFISHING_LAST_RESET = ATTACHMENT_TYPES.register("overfishing_last_reset",
+            () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
+    public static final Supplier<AttachmentType<Long>> OVERFISHING_LAST_FISHED = ATTACHMENT_TYPES.register("overfishing_last_fished",
+            () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
 
     public static final BlockCapability<MotorboatPathfindingNode, Void> MOTORBOAT_PATHFINDING_NODE = BlockCapability.createVoid(
             ResourceLocation.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class

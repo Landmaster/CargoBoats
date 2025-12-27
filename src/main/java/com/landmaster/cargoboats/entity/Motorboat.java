@@ -23,6 +23,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -37,15 +38,20 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -92,8 +98,8 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public final IItemHandlerModifiable combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
     private long stuckTime = STUCK_TIME_THRESHOLD;
+    private int fishingCounter = 0;
     private final int baseInvSize;
-    //public boolean showDestination = false;
 
     public static final int CONTAINER_SLOTS = 4;
 
@@ -190,6 +196,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         automationEnabled = compound.getBoolean("AutomationEnabled");
         upgradeHandler.deserializeNBT(registryAccess(), compound.getCompound("Upgrades"));
         itemHandler.deserializeNBT(registryAccess(), compound.getCompound("Inventory"));
+        fishingCounter = compound.getInt("FishingCounter");
     }
 
     @Override
@@ -206,6 +213,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         compound.putBoolean("AutomationEnabled", automationEnabled);
         compound.put("Upgrades", upgradeHandler.serializeNBT(registryAccess()));
         compound.put("Inventory", itemHandler.serializeNBT(registryAccess()));
+        compound.putInt("FishingCounter", fishingCounter);
     }
 
     public MotorboatSchedule getMotorboatSchedule() {
@@ -349,6 +357,35 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     }
 
+    private void runFishing() {
+        var upgrade = Util.findItem(upgradeHandler, CargoBoats.FISHING_UPGRADE.get());
+        int energyConsumption = Config.FISHING_ENERGY_CONSUMPTION.getAsInt();
+        if ((status == Status.IN_WATER || status == Status.UNDER_WATER)
+                && !upgrade.isEmpty()
+                && level() instanceof ServerLevel serverLevel
+                && serverLevel.getFluidState(positionForPathfinding()).is(FluidTags.WATER)
+                && extractEnergy(energyConsumption, true) >= energyConsumption
+        ) {
+            extractEnergy(energyConsumption, false);
+            double effectiveFishingInterval = Config.BASE_FISHING_TIME.getAsDouble() - EnchantmentHelper.getFishingTimeReduction(serverLevel, upgrade, this);
+            double probability = Config.FISHING_PROBABILITY_FACTOR.getAsDouble() / Math.max(effectiveFishingInterval, Config.FISHING_PROBABILITY_FACTOR.getAsDouble());
+            var chunkPos = chunkPosition();
+            var chunk = serverLevel.getChunk(chunkPos.x, chunkPos.z);
+            double overfishingProportion = Util.calcAndIncreaseOverfishingProportion(chunk);
+            probability *= Math.pow(Config.OVERFISHING_EXPONENTIAL_BASE.getAsDouble(), overfishingProportion);
+            if (random.nextDouble() < probability) {
+                var lootparams = new LootParams.Builder(serverLevel)
+                        .withParameter(LootContextParams.ORIGIN, this.position())
+                        .withParameter(LootContextParams.TOOL, upgrade)
+                        .withParameter(LootContextParams.THIS_ENTITY, this)
+                        .withLuck(EnchantmentHelper.getFishingLuckBonus(serverLevel, upgrade, this))
+                        .create(LootContextParamSets.FISHING);
+                LootTable loottable = serverLevel.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
+                loottable.getRandomItems(lootparams, stack -> ItemHandlerHelper.insertItemStacked(itemHandler, stack, false));
+            }
+        }
+    }
+
     @Override
     public void tick() {
         this.oldStatus = this.status;
@@ -356,6 +393,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         chunkLoad();
         adjustCapacity();
+        runFishing();
 
         if (!level().isClientSide && !isControlledByLocalInstance()) {
             getEntityData().set(CLIENT_MOTORBOAT_SPEED, (float)relativeMotorboatSpeed());
@@ -594,20 +632,20 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     @Override
-    public int receiveEnergy(int i, boolean b) {
+    public int receiveEnergy(int i, boolean simulate) {
         int energy = getEnergyStored();
         int toReceive = Math.clamp(i, 0, getMaxEnergyStored() - energy);
-        if (!b) {
+        if (!simulate) {
             getEntityData().set(ENERGY, energy + toReceive);
         }
         return toReceive;
     }
 
     @Override
-    public int extractEnergy(int i, boolean b) {
+    public int extractEnergy(int i, boolean simulate) {
         int energy = getEnergyStored();
         int toExtract = Math.clamp(i, 0, energy);
-        if (!b) {
+        if (!simulate) {
             getEntityData().set(ENERGY, energy - toExtract);
         }
         return toExtract;

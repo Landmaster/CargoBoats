@@ -8,6 +8,7 @@
   "item.cargoboats.speed_upgrade": "Speed Upgrade",
   "item.cargoboats.capacity_upgrade": "Capacity Upgrade",
   "item.cargoboats.lava_upgrade": "Lava Upgrade",
+  "item.cargoboats.fishing_upgrade": "Fishing Upgrade",
   "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
@@ -21,6 +22,11 @@
   "cargoboats.configruation.motorboat_base_fluid_capacity": "Motorboat base fluid capacity",
   "cargoboats.configruation.motorboat_capacity_upgrade_item_multipliers": "Capacity upgrade item multipliers",
   "cargoboats.configruation.motorboat_capacity_upgrade_fluid": "Fluid capacities w/ upgrades",
+  "cargoboats.configuration.overfishing_forgiveness": "Overfishing forgiveness",
+  "cargoboats.configuration.overfishing_exponential_base": "Overfishing exponent base",
+  "cargoboats.configuration.base_fishing_time": "Base fishing time (seconds)",
+  "cargoboats.configuration.fishing_probability_factor": "Fishing probability factor (per tick)",
+  "cargoboats.configuration.fishing_energy_consumption": "Fishing energy consumption",
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.fluid_indicator": "%s: %d mB / %d mB",
@@ -57,5 +63,7 @@
   "tooltip.cargoboats.motorboat.dock": "Interface with motorboat items, energy, and fluids",
   "tooltip.cargoboats.programmer_adjust": "Adjusts stop time by %d ticks (%d ticks if shift-clicked)",
   "tooltip.cargoboats.lava_upgrade": "Allows motorboats to be driven in lava. (This upgrade, as well as dropped motorboat items regardless of this upgrade, are not destroyed by lava.)",
-  "tooltip.cargoboats.motorboat.has_data": "Motorboat data has been saved"
+  "tooltip.cargoboats.motorboat.has_data": "Motorboat data has been saved",
+  "tooltip.cargoboats.fishing_upgrade.0": "Enchantable with fishing enchants",
+  "tooltip.cargoboats.fishing_upgrade.1": "Energy usage: %d RF/t"
 }
