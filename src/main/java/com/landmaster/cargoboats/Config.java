@@ -53,7 +53,7 @@ public class Config {
 
     public static final ModConfigSpec.DoubleValue OVERFISHING_EXPONENTIAL_BASE = BUILDER
             .comment("If this value is B, then the fishing probability is multiplied by B^x where x is the fraction of time fished")
-            .defineInRange("overfishing_exponential_base", 0.01, 0.0, 1.0);
+            .defineInRange("overfishing_exponential_base", 0.06, 0.0, 1.0);
 
     public static final ModConfigSpec.DoubleValue BASE_FISHING_TIME = BUILDER
             .comment("Base fishing time (in SECONDS) that the fishing time reduction is subtracted from")
