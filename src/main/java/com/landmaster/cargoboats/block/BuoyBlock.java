@@ -40,7 +40,8 @@ public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
 
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.buoy").withStyle(ChatFormatting.AQUA));
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.buoy.0").withStyle(ChatFormatting.AQUA));
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.buoy.1").withStyle(ChatFormatting.AQUA));
     }
 
     @Nonnull
