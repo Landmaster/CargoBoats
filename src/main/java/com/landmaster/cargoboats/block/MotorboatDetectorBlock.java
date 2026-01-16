@@ -2,10 +2,15 @@ package com.landmaster.cargoboats.block;
 
 import com.landmaster.cargoboats.block.entity.MotorboatDetectorBlockEntity;
 import com.mojang.serialization.MapCodec;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -21,6 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInteractable {
     public static final MapCodec<MotorboatDetectorBlock> CODEC = simpleCodec(MotorboatDetectorBlock::new);
@@ -29,6 +35,11 @@ public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInt
     public MotorboatDetectorBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(POWERED, false));
+    }
+
+    @Override
+    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.motorboat_detector").withStyle(ChatFormatting.AQUA));
     }
 
     @Nonnull

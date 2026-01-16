@@ -69,5 +69,6 @@
   "tooltip.cargoboats.lava_upgrade": "Allows motorboats to be driven in lava. (This upgrade, as well as dropped motorboat items regardless of this upgrade, are not destroyed by lava.)",
   "tooltip.cargoboats.motorboat.has_data": "Motorboat data has been saved",
   "tooltip.cargoboats.fishing_upgrade.0": "Enchantable with fishing enchants",
-  "tooltip.cargoboats.fishing_upgrade.1": "Energy usage: %d RF/t"
+  "tooltip.cargoboats.fishing_upgrade.1": "Energy usage: %d RF/t",
+  "tooltip.cargoboats.motorboat.motorboat_detector": "Emits a redstone signal if a motorboat is in a (configurable in GUI) range"
 }

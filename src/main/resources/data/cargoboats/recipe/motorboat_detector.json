@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "e": {
+      "tag": "c:ender_pearls"
+    },
+    "t": {
+      "item": "minecraft:redstone_torch"
+    },
+    "b": {
+      "tag": "minecraft:boats"
+    },
+    "s": {
+      "item": "minecraft:sculk_sensor"
+    }
+  },
+  "pattern": [
+    " e ",
+    "tst",
+    " b "
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:motorboat_detector"
+  }
+}
