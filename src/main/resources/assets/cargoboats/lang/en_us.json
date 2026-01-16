@@ -2,6 +2,7 @@
   "itemGroup.cargoboats": "Cargo Boats",
   "block.cargoboats.dock": "Dock",
   "block.cargoboats.buoy": "Buoy",
+  "block.cargoboats.motorboat_detector": "Motorboat Detector",
   "item.cargoboats.motorboat": "Motorboat",
   "item.cargoboats.fluid_motorboat": "Fluid Motorboat",
   "item.cargoboats.motorboat_programmer": "Motorboat Programmer",
@@ -37,6 +38,8 @@
   "gui.cargoboats.page.asterisk": "Page %d/%d*",
   "gui.cargoboats.buoy_offset.x": "x offset: %d",
   "gui.cargoboats.buoy_offset.z": "z offset: %d",
+  "gui.cargoboats.motorboat_detector.min": "Minimum offset",
+  "gui.cargoboats.motorboat_detector.max": "Maximum offset",
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
   "message.cargoboats.dock_added.distance": "(%sm from previous node)",

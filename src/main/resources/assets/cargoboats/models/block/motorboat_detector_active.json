@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "cargoboats:block/motorboat_detector_active"
+  }
+}

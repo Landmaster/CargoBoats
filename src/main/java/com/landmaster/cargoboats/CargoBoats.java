@@ -2,16 +2,15 @@ package com.landmaster.cargoboats;
 
 import com.landmaster.cargoboats.block.BuoyBlock;
 import com.landmaster.cargoboats.block.DockBlock;
+import com.landmaster.cargoboats.block.MotorboatDetectorBlock;
 import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.block.entity.BuoyBlockEntity;
 import com.landmaster.cargoboats.block.entity.DockBlockEntity;
+import com.landmaster.cargoboats.block.entity.MotorboatDetectorBlockEntity;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.item.*;
-import com.landmaster.cargoboats.menu.BuoyMenu;
-import com.landmaster.cargoboats.menu.FluidMotorboatMenu;
-import com.landmaster.cargoboats.menu.MotorboatMenu;
-import com.landmaster.cargoboats.menu.MotorboatProgrammerMenu;
+import com.landmaster.cargoboats.menu.*;
 import com.landmaster.cargoboats.network.*;
 import com.landmaster.cargoboats.util.MotorboatSchedule;
 import com.mojang.serialization.Codec;
@@ -111,9 +110,18 @@ public class CargoBoats {
                     .noCollission()
                     .lightLevel(state -> 12)
     );
+    public static final DeferredBlock<MotorboatDetectorBlock> MOTORBOAT_DETECTOR = BLOCKS.registerBlock("motorboat_detector", MotorboatDetectorBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GREEN)
+                    .instrument(NoteBlockInstrument.BASS)
+                    .strength(0.8F)
+                    .sound(SoundType.METAL)
+    );
 
     public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
     public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
+    public static final DeferredItem<BlockItem> MOTORBOAT_DETECTOR_ITEM = ITEMS.registerSimpleBlockItem(MOTORBOAT_DETECTOR);
+
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat",
             MotorboatItem::new, new Item.Properties().stacksTo(1).fireResistant());
     public static final DeferredItem<MotorboatItem> FLUID_MOTORBOAT_ITEM = ITEMS.registerItem("fluid_motorboat",
@@ -143,6 +151,7 @@ public class CargoBoats {
             .displayItems((parameters, output) -> {
                 output.accept(DOCK_ITEM);
                 output.accept(BUOY_ITEM);
+                output.accept(MOTORBOAT_DETECTOR_ITEM);
                 output.accept(MOTORBOAT_ITEM);
                 output.accept(FLUID_MOTORBOAT_ITEM);
                 output.accept(MOTORBOAT_PROGRAMMER);
@@ -161,11 +170,15 @@ public class CargoBoats {
             "motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
     public static final Supplier<MenuType<BuoyMenu>> BUOY_MENU = MENU_TYPES.register(
             "buoy", () -> IMenuTypeExtension.create(BuoyMenu::new));
+    public static final Supplier<MenuType<MotorboatDetectorMenu>> MOTORBOAT_DETECTOR_MENU = MENU_TYPES.register(
+            "motorboat_detector", () -> IMenuTypeExtension.create(MotorboatDetectorMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
     public static final Supplier<BlockEntityType<BuoyBlockEntity>> BUOY_TE = BLOCK_ENTITY_TYPES.register("buoy",
             () -> BlockEntityType.Builder.of(BuoyBlockEntity::new, BUOY.get()).build(null));
+    public static final Supplier<BlockEntityType<MotorboatDetectorBlockEntity>> MOTORBOAT_DETECTOR_TE = BLOCK_ENTITY_TYPES.register("motorboat_detector",
+            () -> BlockEntityType.Builder.of(MotorboatDetectorBlockEntity::new, MOTORBOAT_DETECTOR.get()).build(null));
 
     public static final Supplier<AttachmentType<Long>> OVERFISHING_TICKS = ATTACHMENT_TYPES.register("overfishing_ticks",
             () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
@@ -236,6 +249,7 @@ public class CargoBoats {
         registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
         registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle);
         registrar.playBidirectional(SyncBuoyPacket.TYPE, SyncBuoyPacket.STREAM_CODEC, SyncBuoyPacket::handle);
+        registrar.playBidirectional(SyncMotorboatDetectorPacket.TYPE, SyncMotorboatDetectorPacket.STREAM_CODEC, SyncMotorboatDetectorPacket::handle);
     }
 
     @SubscribeEvent

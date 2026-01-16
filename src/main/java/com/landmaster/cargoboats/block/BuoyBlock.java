@@ -68,7 +68,7 @@ public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         } else {
-            BlockEntity blockentity = level.getBlockEntity(pos);
+            var blockentity = level.getBlockEntity(pos);
             if (blockentity instanceof BuoyBlockEntity buoyBlockEntity) {
                 player.openMenu(buoyBlockEntity, pos);
             }

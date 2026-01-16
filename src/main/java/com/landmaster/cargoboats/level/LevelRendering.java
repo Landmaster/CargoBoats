@@ -1,6 +1,7 @@
 package com.landmaster.cargoboats.level;
 
 import com.landmaster.cargoboats.CargoBoats;
+import com.landmaster.cargoboats.block.entity.MotorboatDetectorBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -44,6 +45,19 @@ public class LevelRendering {
                         -cameraPos.y,
                         -cameraPos.z,
                         0.0f, 0.0f, 1.0f, 1.0f);
+            } else {
+                var te = level.getBlockEntity(event.getTarget().getBlockPos());
+                if (te instanceof MotorboatDetectorBlockEntity detector) {
+                    var cameraPos = event.getCamera().getPosition();
+                    renderShape(
+                            event.getPoseStack(),
+                            event.getMultiBufferSource().getBuffer(RenderType.lines()),
+                            Shapes.create(detector.getDetectionBox()),
+                            -cameraPos.x,
+                            -cameraPos.y,
+                            -cameraPos.z,
+                            1.0f, 0.0f, 1.0f, 1.0f);
+                }
             }
         }
     }
