@@ -11,6 +11,8 @@
   "item.cargoboats.lava_upgrade": "Lava Upgrade",
   "item.cargoboats.fishing_upgrade": "Fishing Upgrade",
   "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
+  "item.cargoboats.cargoboats_guide": "Cargo Merchant's Guide",
+  "landing_text.cargoboats.cargoboats_guide": "Cargo Boats is a mod that allows players to cheaply transport items and fluids across long distances.",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
   "cargoboats.configuration.section.cargoboats.common.toml": "Cargo Boats Configs",

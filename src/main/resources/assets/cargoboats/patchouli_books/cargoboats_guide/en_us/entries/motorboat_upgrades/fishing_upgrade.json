@@ -1,0 +1,15 @@
+{
+  "name": "Fishing Upgrade",
+  "icon": "cargoboats:fishing_upgrade",
+  "category": "cargoboats:motorboat_upgrades",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A Fishing Upgrade allows item motorboats to fish at the cost of a bit of energy usage. It can be enchanted with fishing enchants. Be careful not to let fishing motorboats spend too much relative time in a chunk; otherwise, there is an overfishing penalty applied. Paths of about a few hundred blocks should be sufficient to mitigate the penalty."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:fishing_upgrade"
+    }
+  ]
+}

@@ -117,7 +117,7 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
                 return Optional.of(cand);
             }
         }
-        return Optional.of(cands.getFirst());
+        return cands.stream().filter(motorboat -> motorboat.nextStop().isEmpty()).findFirst();
     }
 
     public Optional<Motorboat> getDockedMotorboat() {

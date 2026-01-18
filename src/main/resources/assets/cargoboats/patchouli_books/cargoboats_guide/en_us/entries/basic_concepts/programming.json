@@ -1,0 +1,16 @@
+{
+  "name": "Automating Motorboats",
+  "icon": "cargoboats:motorboat_programmer",
+  "category": "cargoboats:basic_concepts",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Right-click a Motorboat Programmer on docks or buoys in the order that you want the motorboat to visit them. Optionally, you can open the motorboat programmer GUI to adjust the time stopped on each destination or delete destinations. Afterwards, right-clicking a motorboat programs it with the saved schedule, looping through the destinations."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:motorboat_programmer",
+      "text": "A Motorboat Programmer stores a schedule that can be saved to a motorboat for it to follow."
+    }
+  ]
+}

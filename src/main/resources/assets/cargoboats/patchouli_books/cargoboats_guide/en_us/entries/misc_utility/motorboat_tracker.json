@@ -1,0 +1,15 @@
+{
+  "name": "Motorboat Tracker",
+  "icon": "cargoboats:motorboat_tracker",
+  "category": "cargoboats:misc_utility",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A Motorboat Tracker is a utility item that can be used to track where a given motorboat is. Simply right-click on a motorboat and the tracker will display where it is relative to the player holding it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:motorboat_tracker"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Wrench Interactions",
+  "icon": "cargoboats:textures/patchouli/wrench.png",
+  "category": "cargoboats:misc_utility",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Motorboats and functional blocks in the mod can interact with wrenches. Simple right-clicking rotates blocks. Shift-right-clicking immediately breaks the object and puts the corresponding item in the player inventory, saving the contents when applicable."
+    }
+  ]
+}

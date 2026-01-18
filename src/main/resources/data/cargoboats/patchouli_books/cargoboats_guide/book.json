@@ -1,0 +1,6 @@
+{
+  "name": "item.cargoboats.cargoboats_guide",
+  "landing_text": "landing_text.cargoboats.cargoboats_guide",
+  "use_resource_pack": true,
+  "creative_tab": "cargoboats:cargoboats"
+}

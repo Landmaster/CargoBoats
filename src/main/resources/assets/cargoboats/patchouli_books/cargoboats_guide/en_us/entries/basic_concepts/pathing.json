@@ -1,0 +1,15 @@
+{
+  "name": "Motorboat Pathing",
+  "icon": "minecraft:compass",
+  "category": "cargoboats:basic_concepts",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Motorboats need 3x3 free space to pathfind to a given location. Motorboats will try to cycle through the programmed destinations in order. Their pathfinding range between one destination and another is about 200 blocks; use buoys to extend their range."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "With some $(l:https://www.reddit.com/r/feedthebeast/comments/1pw83jm/cargo_boats_devlog_motorboats_can_navigate_to/)clever buoy placement and use of soul sand bubble columns and drops$(/l), you can even have boats go up and down automatically as well."
+    }
+  ]
+}

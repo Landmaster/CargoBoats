@@ -1,0 +1,15 @@
+{
+  "name": "Buoys",
+  "icon": "cargoboats:buoy",
+  "category": "cargoboats:basic_concepts",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Buoys function as intermediate points/guides in motorboat pathing (especially for longer motorboat paths). They have no collision box, and can be placed on both water and land. By default boats will path directly towards the buoy, but you can configure a horizontal offset using the GUI."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:buoy"
+    }
+  ]
+}

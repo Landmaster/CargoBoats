@@ -1,0 +1,5 @@
+{
+  "name": "Motorboat Upgrades",
+  "description": "Motorboats can have upgrades installed in dedicated slots in their inventory that enhance them in some way.",
+  "icon": "cargoboats:speed_upgrade"
+}

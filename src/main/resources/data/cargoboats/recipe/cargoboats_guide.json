@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ],
+  "ingredients": [
+    {
+      "tag": "minecraft:boats"
+    },
+    {
+      "item": "minecraft:book"
+    }
+  ],
+  "result": {
+    "id": "patchouli:guide_book",
+    "components": {
+      "patchouli:book": "cargoboats:cargoboats_guide"
+    },
+    "count": 1
+  }
+}

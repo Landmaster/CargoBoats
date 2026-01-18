@@ -1,0 +1,15 @@
+{
+  "name": "Motorboat Detector",
+  "icon": "cargoboats:motorboat_detector",
+  "category": "cargoboats:misc_utility",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A Motorboat Detector emits a redstone signal when there is a motorboat in range of it (default: a 7x7 box centered on it). This range is configurable in the GUI."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:motorboat_detector"
+    }
+  ]
+}

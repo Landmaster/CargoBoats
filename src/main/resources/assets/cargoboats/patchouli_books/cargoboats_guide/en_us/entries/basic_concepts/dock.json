@@ -1,0 +1,15 @@
+{
+  "name": "Docks",
+  "icon": "cargoboats:dock",
+  "category": "cargoboats:basic_concepts",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Docks function as stopping points to load or unload items/fluids from motorboats, as well as powering them up with energy. A dock will try to dock a motorboat in a range in front of it, prioritizing motorboats programmed to stop there. Simply connect item/fluid/energy pipes to the dock and the pipes will interface with the currently docked motorboat."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:dock"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Motorboats",
+  "icon": "cargoboats:motorboat",
+  "category": "cargoboats:basic_concepts",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Motorboats are the vehicles used to transport items and fluids across long distances. They can be ridden just like a regular chest boat, but their movement can also be programmed/automated at the cost of a bit of energy per tick."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:motorboat",
+      "recipe2": "cargoboats:fluid_motorboat"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Capacity Upgrade",
+  "icon": "cargoboats:capacity_upgrade",
+  "category": "cargoboats:motorboat_upgrades",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Capacity upgrades increase the amount of items/fluids that a motorboat can hold at a time, with more of them increasing this effect. If a capacity upgrade is taken off of an item motorboat that would be over capacity afterwards, then the over capacity items will still be present but no items can be inserted in the extra slots."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:capacity_upgrade"
+    }
+  ]
+}

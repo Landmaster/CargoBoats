@@ -144,8 +144,8 @@ public class CargoBoats {
                     .sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
                     .build("fluid_motorboat"));
 
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.cargoboats")) //The language key for the title of your CreativeModeTab
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("cargoboats", () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.cargoboats"))
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(MOTORBOAT_ITEM::toStack)
             .displayItems((parameters, output) -> {
