@@ -9,7 +9,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "With some $(l:https://www.reddit.com/r/feedthebeast/comments/1pw83jm/cargo_boats_devlog_motorboats_can_navigate_to/)clever buoy placement and use of soul sand bubble columns and drops$(/l), you can even have boats go up and down automatically as well."
+      "text": "With some $(l:https://www.reddit.com/r/feedthebeast/comments/1pw83jm/cargo_boats_devlog_motorboats_can_navigate_to/)clever buoy placement and use of soul sand bubble columns and drops$(/l), you can even have boats go up and down automatically as well. In fact, $(l:https://www.reddit.com/r/feedthebeast/comments/1qgqi3a/cargo_boats_dev_update_motorboats_can_transport/)you can even have motorboats go automatically through stuff like nether portals too.$(/l)"
     }
   ]
 }

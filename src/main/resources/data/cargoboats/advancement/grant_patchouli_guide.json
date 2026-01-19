@@ -4,6 +4,12 @@
       "trigger": "minecraft:tick"
     }
   },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "patchouli"
+    }
+  ],
   "rewards": {
     "loot": [
       "cargoboats:grant_patchouli_guide"
