@@ -5,11 +5,11 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Motorboats need 3x3 free space to pathfind to a given location. Motorboats will try to cycle through the programmed destinations in order. Their pathfinding range between one destination and another is about 200 blocks; use buoys to extend their range."
+      "text": "Motorboats need 3x3 free space to pathfind to a given location, in addition to a supporting fluid or solid block. Motorboats will avoid downward bubble columns but will freely path through upwards bubble columns."
     },
     {
       "type": "patchouli:text",
-      "text": "With some $(l:https://www.reddit.com/r/feedthebeast/comments/1pw83jm/cargo_boats_devlog_motorboats_can_navigate_to/)clever buoy placement and use of soul sand bubble columns and drops$(/l), you can even have boats go up and down automatically as well. In fact, $(l:https://www.reddit.com/r/feedthebeast/comments/1qgqi3a/cargo_boats_dev_update_motorboats_can_transport/)you can even have motorboats go automatically through stuff like nether portals too.$(/l)"
+      "text": "Motorboats will try to cycle through the programmed destinations in order. Their pathfinding range between one destination and another is about 200 blocks; use buoys to extend their range. With some $(l:https://www.reddit.com/r/feedthebeast/comments/1pw83jm/cargo_boats_devlog_motorboats_can_navigate_to/)clever buoy placement and use of soul sand bubble columns and drops$(/l), you can even have boats go up and down automatically as well. In fact, $(l:https://www.reddit.com/r/feedthebeast/comments/1qgqi3a/cargo_boats_dev_update_motorboats_can_transport/)you can even have motorboats go automatically through stuff like nether portals too.$(/l)"
     }
   ]
 }
