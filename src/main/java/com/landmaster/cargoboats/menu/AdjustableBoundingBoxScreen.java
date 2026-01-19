@@ -1,7 +1,7 @@
 package com.landmaster.cargoboats.menu;
 
 import com.landmaster.cargoboats.CargoBoats;
-import com.landmaster.cargoboats.network.SyncMotorboatDetectorPacket;
+import com.landmaster.cargoboats.network.AdjustBoundingBoxPacket;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -13,8 +13,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 
-public class MotorboatDetectorScreen extends AbstractContainerScreen<MotorboatDetectorMenu> {
-    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/motorboat_detector.png");
+public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<AdjustableBoundingBoxMenu> {
+    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/adjustable_bounding_box.png");
 
     private class AdjustingButton extends Button {
         public AdjustingButton(int x, int y, int delta, Direction direction) {
@@ -48,14 +48,14 @@ public class MotorboatDetectorScreen extends AbstractContainerScreen<MotorboatDe
                             break;
                     }
 
-                    PacketDistributor.sendToServer(new SyncMotorboatDetectorPacket(menu.detector.getBlockPos(),
+                    PacketDistributor.sendToServer(new AdjustBoundingBoxPacket(menu.detector.getBlockPos(),
                             (byte) minX, (byte) minY, (byte) minZ, (byte) maxX, (byte) maxY, (byte) maxZ));
                 }
             }, DEFAULT_NARRATION);
         }
     }
 
-    public MotorboatDetectorScreen(MotorboatDetectorMenu menu, Inventory playerInventory, Component title) {
+    public AdjustableBoundingBoxScreen(AdjustableBoundingBoxMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         imageWidth = 145;
         imageHeight = 109;
@@ -83,9 +83,9 @@ public class MotorboatDetectorScreen extends AbstractContainerScreen<MotorboatDe
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         if (menu.detector != null) {
             guiGraphics.drawString(font,
-                    Component.translatable("gui.cargoboats.motorboat_detector.min"), leftPos + 8, topPos + 22, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), leftPos + 8, topPos + 22, 0xff000000, false);
             guiGraphics.drawString(font,
-                    Component.translatable("gui.cargoboats.motorboat_detector.max"), leftPos + 8, topPos + 52, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), leftPos + 8, topPos + 52, 0xff000000, false);
             var text = Integer.toString(menu.detector.minX);
             guiGraphics.drawString(font, text, leftPos + 28 - font.width(text)/2, topPos + 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxX);

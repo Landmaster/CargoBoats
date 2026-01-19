@@ -38,10 +38,8 @@
   "gui.cargoboats.motorboat_schedule": "Stop %d: %s",
   "gui.cargoboats.page": "Page %d/%d",
   "gui.cargoboats.page.asterisk": "Page %d/%d*",
-  "gui.cargoboats.buoy_offset.x": "x offset: %d",
-  "gui.cargoboats.buoy_offset.z": "z offset: %d",
-  "gui.cargoboats.motorboat_detector.min": "Minimum offset",
-  "gui.cargoboats.motorboat_detector.max": "Maximum offset",
+  "gui.cargoboats.adjustable_bounding_box.min": "Minimum offset",
+  "gui.cargoboats.adjustable_bounding_box.max": "Maximum offset",
 
   "message.cargoboats.dock_added": "Node added to schedule: %s",
   "message.cargoboats.dock_added.distance": "(%sm from previous node)",

@@ -2,7 +2,7 @@ package com.landmaster.cargoboats.block.entity;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
-import com.landmaster.cargoboats.menu.BuoyMenu;
+import com.landmaster.cargoboats.menu.AdjustableBoundingBoxMenu;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -12,36 +12,40 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BuoyBlockEntity extends BlockEntity implements MotorboatPathfindingNode, MenuProvider {
-    public int offsetX = 0, offsetZ = 0;
-
+public class BuoyBlockEntity extends AdjustableBoundingBoxBlockEntity implements MotorboatPathfindingNode, MenuProvider {
     public BuoyBlockEntity(BlockPos pos, BlockState blockState) {
         super(CargoBoats.BUOY_TE.get(), pos, blockState);
+        minY = -maxDimension();
+        maxY = -minY;
     }
 
     @Override
     protected void loadAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        offsetX = tag.getByte("OffsetX");
-        offsetZ = tag.getByte("OffsetZ");
+        // legacy tags
+        if (tag.contains("OffsetX") && tag.contains("OffsetZ")) {
+            minX = tag.getByte("OffsetX");
+            minY = -maxDimension();
+            minZ = tag.getByte("OffsetZ");
+            maxX = minX;
+            maxY = -minY;
+            maxZ = minZ;
+        }
     }
 
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putByte("OffsetX", (byte) offsetX);
-        tag.putByte("OffsetZ", (byte) offsetZ);
     }
 
     @Override
     public Pair<BlockPos, BlockPos> getBoxForMotorboatPathfinding() {
-        return Pair.of(worldPosition.offset(offsetX, -2, offsetZ), worldPosition.offset(offsetX, 2, offsetZ));
+        return Pair.of(worldPosition.offset(minX, minY, minZ), worldPosition.offset(maxX, maxY, maxZ));
     }
 
     @Override
@@ -63,7 +67,7 @@ public class BuoyBlockEntity extends BlockEntity implements MotorboatPathfinding
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerId, @Nonnull Inventory playerInventory, @Nonnull Player player) {
-        return new BuoyMenu(containerId, this);
+        return new AdjustableBoundingBoxMenu(containerId, this);
     }
 
     @Nonnull
@@ -72,5 +76,10 @@ public class BuoyBlockEntity extends BlockEntity implements MotorboatPathfinding
         var result = new CompoundTag();
         saveAdditional(result, registries);
         return result;
+    }
+
+    @Override
+    public int maxDimension() {
+        return 3;
     }
 }

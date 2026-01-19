@@ -42,7 +42,6 @@ public class CargoBoatsClient {
         event.register(CargoBoats.MOTORBOAT_MENU.get(), MotorboatScreen::new);
         event.register(CargoBoats.FLUID_MOTORBOAT_MENU.get(), FluidMotorboatScreen::new);
         event.register(CargoBoats.MOTORBOAT_PROGRAMMER_MENU.get(), MotorboatProgrammerScreen::new);
-        event.register(CargoBoats.BUOY_MENU.get(), BuoyScreen::new);
-        event.register(CargoBoats.MOTORBOAT_DETECTOR_MENU.get(), MotorboatDetectorScreen::new);
+        event.register(CargoBoats.ADJUSTABLE_BOUNDING_BOX_MENU.get(), AdjustableBoundingBoxScreen::new);
     }
 }

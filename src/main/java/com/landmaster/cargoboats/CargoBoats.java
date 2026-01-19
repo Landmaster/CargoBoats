@@ -168,10 +168,8 @@ public class CargoBoats {
             "fluid_motorboat", () -> new MenuType<>(FluidMotorboatMenu::new, FeatureFlags.DEFAULT_FLAGS));
     public static final Supplier<MenuType<MotorboatProgrammerMenu>> MOTORBOAT_PROGRAMMER_MENU = MENU_TYPES.register(
             "motorboat_programmer", () -> IMenuTypeExtension.create(MotorboatProgrammerMenu::new));
-    public static final Supplier<MenuType<BuoyMenu>> BUOY_MENU = MENU_TYPES.register(
-            "buoy", () -> IMenuTypeExtension.create(BuoyMenu::new));
-    public static final Supplier<MenuType<MotorboatDetectorMenu>> MOTORBOAT_DETECTOR_MENU = MENU_TYPES.register(
-            "motorboat_detector", () -> IMenuTypeExtension.create(MotorboatDetectorMenu::new));
+    public static final Supplier<MenuType<AdjustableBoundingBoxMenu>> ADJUSTABLE_BOUNDING_BOX_MENU = MENU_TYPES.register(
+            "adjustable_bounding_box", () -> IMenuTypeExtension.create(AdjustableBoundingBoxMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
             () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
@@ -242,14 +240,13 @@ public class CargoBoats {
 
     @SubscribeEvent
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("1");
+        var registrar = event.registrar("2");
         registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
         registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
         registrar.playToClient(TrackMotorboatPacket.TYPE, TrackMotorboatPacket.STREAM_CODEC, TrackMotorboatPacket::handle);
         registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
         registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle);
-        registrar.playBidirectional(SyncBuoyPacket.TYPE, SyncBuoyPacket.STREAM_CODEC, SyncBuoyPacket::handle);
-        registrar.playBidirectional(SyncMotorboatDetectorPacket.TYPE, SyncMotorboatDetectorPacket.STREAM_CODEC, SyncMotorboatDetectorPacket::handle);
+        registrar.playBidirectional(AdjustBoundingBoxPacket.TYPE, AdjustBoundingBoxPacket.STREAM_CODEC, AdjustBoundingBoxPacket::handle);
     }
 
     @SubscribeEvent
