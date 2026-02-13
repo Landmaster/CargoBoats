@@ -134,6 +134,7 @@ public class CargoBoats {
     public static final DeferredItem<FishingUpgradeItem> FISHING_UPGRADE = ITEMS.registerItem("fishing_upgrade", FishingUpgradeItem::new);
     public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new,
             new Item.Properties().stacksTo(1));
+    public static final DeferredItem<IcebreakerUpgradeItem> ICEBREAKER_UPGRADE = ITEMS.registerItem("icebreaker_upgrade", IcebreakerUpgradeItem::new);
 
     public static final Supplier<EntityType<Motorboat>> MOTORBOAT = ENTITIES.register("motorboat",
             () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
@@ -159,6 +160,7 @@ public class CargoBoats {
                 output.accept(CAPACITY_UPGRADE);
                 output.accept(LAVA_UPGRADE);
                 output.accept(FISHING_UPGRADE);
+                output.accept(ICEBREAKER_UPGRADE);
                 output.accept(MOTORBOAT_TRACKER);
             }).build());
 

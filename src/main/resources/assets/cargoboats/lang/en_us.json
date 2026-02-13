@@ -12,6 +12,7 @@
   "item.cargoboats.fishing_upgrade": "Fishing Upgrade",
   "item.cargoboats.motorboat_tracker": "Motorboat Tracker",
   "item.cargoboats.cargoboats_guide": "Cargo Merchant's Guide",
+  "item.cargoboats.icebreaker_upgrade": "Icebreaker Upgrade",
   "landing_text.cargoboats.cargoboats_guide": "Cargo Boats is a mod that allows players to cheaply transport items and fluids across long distances.",
 
   "cargoboats.configuration.title": "Cargo Boats Configs",
@@ -70,5 +71,6 @@
   "tooltip.cargoboats.motorboat.has_data": "Motorboat data has been saved",
   "tooltip.cargoboats.fishing_upgrade.0": "Enchantable with fishing enchants",
   "tooltip.cargoboats.fishing_upgrade.1": "Energy usage: %d RF/t",
-  "tooltip.cargoboats.motorboat.motorboat_detector": "Emits a redstone signal if a motorboat is in a (configurable in GUI) range"
+  "tooltip.cargoboats.motorboat.motorboat_detector": "Emits a redstone signal if a motorboat is in a (configurable in GUI) range",
+  "tooltip.cargoboats.icebreaker_upgrade": "Melts surrounding ice into water."
 }

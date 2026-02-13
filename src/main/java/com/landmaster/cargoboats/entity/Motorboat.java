@@ -23,6 +23,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
@@ -42,6 +43,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -100,6 +102,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private long stuckTime = STUCK_TIME_THRESHOLD;
     private int fishingCounter = 0;
     private final int baseInvSize;
+    private boolean icebreakerActive;
 
     public static final int CONTAINER_SLOTS = 4;
 
@@ -348,9 +351,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             this.setDeltaMovement(
                     this.getDeltaMovement()
                             .add(
-                                    (double)(Mth.sin(-this.getYRot() * (float) (Math.PI / 180.0)) * f),
+                                    (Mth.sin(-this.getYRot() * (float) (Math.PI / 180.0)) * f),
                                     0.0,
-                                    (double)(Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)) * f)
+                                    (Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)) * f)
                             )
             );
             this.setPaddleState(this.inputRight && !this.inputLeft || this.inputUp, this.inputLeft && !this.inputRight || this.inputUp);
@@ -386,6 +389,20 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     }
 
+    private void runIcebreaker() {
+        icebreakerActive = Util.countItem(upgradeHandler, CargoBoats.ICEBREAKER_UPGRADE.get()) > 0;
+
+        if (icebreakerActive && tickCount % 20 == 0 && (status == Status.IN_WATER || status == Status.UNDER_WATER)) {
+            var centralPos = positionForPathfinding();
+            var level = level();
+            for (var pos: BlockPos.betweenClosed(centralPos.offset(-3, 0, -3), centralPos.offset(3, 0, 3))) {
+                if (level.getBlockState(pos).is(BlockTags.ICE)) {
+                    level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+                }
+            }
+        }
+    }
+
     @Override
     public void tick() {
         this.oldStatus = this.status;
@@ -394,6 +411,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         chunkLoad();
         adjustCapacity();
         runFishing();
+        runIcebreaker();
 
         if (!level().isClientSide && !isControlledByLocalInstance()) {
             getEntityData().set(CLIENT_MOTORBOAT_SPEED, (float)relativeMotorboatSpeed());
@@ -700,10 +718,13 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     private boolean posValid(BlockPos pos, boolean surroundingBlock) {
         if (status == Status.IN_WATER || status == Status.UNDER_WATER || status == Status.UNDER_FLOWING_WATER) {
+            var curState = level().getBlockState(pos);
+            if (icebreakerActive && curState.is(BlockTags.ICE)) {
+                return true;
+            }
             if (!surroundingBlock && !canBoatInFluid(level().getFluidState(pos))) {
                 return false;
             }
-            var curState = level().getBlockState(pos);
             if (!curState.getCollisionShape(level(), pos, CollisionContext.of(this)).isEmpty()
                     || (curState.getBlock() instanceof BubbleColumnBlock
                     && curState.getOptionalValue(BubbleColumnBlock.DRAG_DOWN).orElse(false))) {

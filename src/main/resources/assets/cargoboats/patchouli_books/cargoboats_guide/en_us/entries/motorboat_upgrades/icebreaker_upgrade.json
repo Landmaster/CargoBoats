@@ -1,0 +1,15 @@
+{
+  "name": "Icebreaker Upgrade",
+  "icon": "cargoboats:icebreaker_upgrade",
+  "category": "cargoboats:motorboat_upgrades",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "An Icebreaker Upgrade causes the motorboat to melt surrounding ice periodically while traveling."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "cargoboats:icebreaker_upgrade"
+    }
+  ]
+}

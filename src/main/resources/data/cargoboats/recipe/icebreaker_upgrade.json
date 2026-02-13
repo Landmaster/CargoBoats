@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "i": {
+      "item": "minecraft:blue_ice"
+    },
+    "t": {
+      "item": "minecraft:torch"
+    },
+    "p": {
+      "item": "minecraft:iron_pickaxe"
+    }
+  },
+  "pattern": [
+    "tit",
+    "ipi",
+    "tit"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cargoboats:icebreaker_upgrade"
+  }
+}
