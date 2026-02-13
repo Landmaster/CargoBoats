@@ -392,10 +392,12 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private void runIcebreaker() {
         icebreakerActive = Util.countItem(upgradeHandler, CargoBoats.ICEBREAKER_UPGRADE.get()) > 0;
 
-        if (icebreakerActive && tickCount % 20 == 0 && (status == Status.IN_WATER || status == Status.UNDER_WATER)) {
+        if (icebreakerActive && tickCount % Config.ICEBREAKER_INTERVAL.getAsInt() == 0 && (status == Status.IN_WATER || status == Status.UNDER_WATER)) {
             var centralPos = positionForPathfinding();
             var level = level();
-            for (var pos: BlockPos.betweenClosed(centralPos.offset(-3, 0, -3), centralPos.offset(3, 0, 3))) {
+            var icebreakerRange = Config.ICEBREAKER_RANGE.getAsInt();
+            for (var pos: BlockPos.betweenClosed(centralPos.offset(-icebreakerRange, 0, -icebreakerRange),
+                    centralPos.offset(icebreakerRange, 0, icebreakerRange))) {
                 if (level.getBlockState(pos).is(BlockTags.ICE)) {
                     level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
                 }

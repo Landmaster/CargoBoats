@@ -68,5 +68,12 @@ public class Config {
             .comment("Fishing energy consumption per tick")
             .defineInRange("fishing_energy_consumption", 5, 0, Integer.MAX_VALUE);
 
+    public static final ModConfigSpec.IntValue ICEBREAKER_RANGE = BUILDER
+            .comment("Range to unfreeze ice blocks")
+            .defineInRange("icebreaker_range", 3, 0, Integer.MAX_VALUE);
+    public static final ModConfigSpec.IntValue ICEBREAKER_INTERVAL = BUILDER
+            .comment("Time (in ticks) between ice block unfreezing")
+            .defineInRange("icebreaker_interval", 10, 1, Integer.MAX_VALUE);
+
     static final ModConfigSpec SPEC = BUILDER.build();
 }

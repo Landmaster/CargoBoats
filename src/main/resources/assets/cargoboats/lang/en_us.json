@@ -31,6 +31,8 @@
   "cargoboats.configuration.base_fishing_time": "Base fishing time (seconds)",
   "cargoboats.configuration.fishing_probability_factor": "Fishing probability factor (per tick)",
   "cargoboats.configuration.fishing_energy_consumption": "Fishing energy consumption",
+  "cargoboats.configuration.icebreaker_range": "Icebreaker range",
+  "cargoboats.configuration.icebreaker_interval": "Icebreaker time interval",
 
   "gui.cargoboats.rf_indicator": "%d RF / %d RF",
   "gui.cargoboats.fluid_indicator": "%s: %d mB / %d mB",
