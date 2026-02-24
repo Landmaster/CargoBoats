@@ -3,10 +3,6 @@ package com.landmaster.cargoboats.entity.render;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.animation.AnimationChannel;
-import net.minecraft.client.animation.AnimationDefinition;
-import net.minecraft.client.animation.Keyframe;
-import net.minecraft.client.animation.KeyframeAnimations;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.WaterPatchModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -58,13 +54,18 @@ public class MotorboatModel extends HierarchicalModel<Motorboat> implements Wate
 
     @Override
     public void setupAnim(@Nonnull Motorboat motorboat, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        motorboat.rotorAnimationState.updateTime(ageInTicks, motorboat.rotorSpeed);
-        rotor.zRot = (float) Math.toRadians((motorboat.rotorAnimationState.getAccumulatedTime() * 10) % 360);
+        motorboat.rotorAnimationState.updateTime(ageInTicks, motorboat.rotorSpeed * 10);
+        rotor.zRot = (float) Math.toRadians(motorboat.rotorAnimationState.getAccumulatedTime() % 360);
     }
 
     @Nonnull
     @Override
     public ModelPart waterPatch() {
         return waterPatch;
+    }
+
+    @Override
+    public void renderToBuffer(@Nonnull PoseStack poseStack, @Nonnull VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        main.render(poseStack, buffer, packedLight, packedOverlay, color);
     }
 }
