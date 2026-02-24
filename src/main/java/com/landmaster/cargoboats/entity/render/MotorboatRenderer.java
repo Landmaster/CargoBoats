@@ -28,8 +28,9 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat> {
     @Override
     public void render(@Nonnull Motorboat p_entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         poseStack.pushPose();
+        poseStack.translate(0, 1.5, 0);
         poseStack.scale(-1.0F, -1.0F, 1.0F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(entityYaw - 90));
+        poseStack.mulPose(Axis.YP.rotationDegrees(entityYaw + 180));
         this.model.setupAnim(p_entity, 0.0F, 0.0F, p_entity.tickCount + partialTick, 0.0F, 0.0F);
         VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(LAYER_LOCATION.getModel()));
         this.model.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY);

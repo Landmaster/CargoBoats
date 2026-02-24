@@ -138,11 +138,11 @@ public class CargoBoats {
 
     public static final Supplier<EntityType<Motorboat>> MOTORBOAT = ENTITIES.register("motorboat",
             () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
-                    .sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
+                    .sized(1.375F, 0.4375F).eyeHeight(0.4375F).clientTrackingRange(10)
                     .build("motorboat"));
     public static final Supplier<EntityType<FluidMotorboat>> FLUID_MOTORBOAT = ENTITIES.register("fluid_motorboat",
             () -> EntityType.Builder.<FluidMotorboat>of(FluidMotorboat::new, MobCategory.MISC)
-                    .sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10)
+                    .sized(1.375F, 0.4375F).eyeHeight(0.4375F).clientTrackingRange(10)
                     .build("fluid_motorboat"));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("cargoboats", () -> CreativeModeTab.builder()

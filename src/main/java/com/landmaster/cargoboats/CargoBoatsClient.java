@@ -28,13 +28,13 @@ public class CargoBoatsClient {
     @SubscribeEvent
     private static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(CargoBoats.MOTORBOAT.get(), MotorboatRenderer::new);
-        event.registerEntityRenderer(CargoBoats.FLUID_MOTORBOAT.get(), FluidMotorboatRenderer::new);
+        event.registerEntityRenderer(CargoBoats.FLUID_MOTORBOAT.get(), MotorboatRenderer::new /* FluidMotorboatRenderer::new */);
     }
 
     @SubscribeEvent
     private static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
-        event.registerLayerDefinition(FluidMotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
+        //event.registerLayerDefinition(FluidMotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
     }
 
     @SubscribeEvent
