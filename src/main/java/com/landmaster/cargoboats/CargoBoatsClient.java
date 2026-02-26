@@ -1,5 +1,6 @@
 package com.landmaster.cargoboats;
 
+import com.landmaster.cargoboats.entity.render.FluidMotorboatModel;
 import com.landmaster.cargoboats.entity.render.FluidMotorboatRenderer;
 import com.landmaster.cargoboats.entity.render.MotorboatModel;
 import com.landmaster.cargoboats.entity.render.MotorboatRenderer;
@@ -34,7 +35,7 @@ public class CargoBoatsClient {
     @SubscribeEvent
     private static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
-        event.registerLayerDefinition(FluidMotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
+        event.registerLayerDefinition(FluidMotorboatRenderer.LAYER_LOCATION, FluidMotorboatModel::createBodyLayer);
     }
 
     @SubscribeEvent

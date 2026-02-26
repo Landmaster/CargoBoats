@@ -78,6 +78,7 @@ public class MotorboatProgrammerItem extends Item {
         for (int i=0; i<3; ++i) {
             tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
         }
+        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_status", stack.get(CargoBoats.MOTORBOAT_SCHEDULE).entries().size()).withStyle(ChatFormatting.YELLOW));
     }
 
     @Override

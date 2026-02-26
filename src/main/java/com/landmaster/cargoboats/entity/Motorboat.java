@@ -166,7 +166,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     protected float getSinglePassengerXOffset() {
-        return 0.35F;
+        return 0.05F;
     }
 
     @Override

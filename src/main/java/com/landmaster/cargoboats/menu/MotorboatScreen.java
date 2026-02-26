@@ -83,4 +83,12 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
             ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16);
         }
     }
+
+    @Override
+    protected void renderTooltip(@Nonnull GuiGraphics guiGraphics, int x, int y) {
+        super.renderTooltip(guiGraphics, x, y);
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
+            guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), x, y);
+        }
+    }
 }
