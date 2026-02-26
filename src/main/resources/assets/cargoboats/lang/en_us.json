@@ -51,7 +51,7 @@
 
   "tooltip.cargoboats.motorboat_schedule": "Stop: %s @ %s (%d ticks)",
   "tooltip.cargoboats.next_stop": "%s @ %s",
-  "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock, buoy, etc. to add it to a schedule",
+  "tooltip.cargoboats.motorboat_programmer_instructions.0": "Right-click a dock, buoy, etc. to add it to a schedule (the same one can be added more than once)",
   "tooltip.cargoboats.motorboat_programmer_instructions.1": "Right-click a motorboat to program it with the schedule",
   "tooltip.cargoboats.motorboat_programmer_instructions.2": "Right-click under any other circumstance to edit the schedule",
   "tooltip.cargoboats.motorboat_tracker": "Right-click a motorboat to link the handheld tracker to it",
