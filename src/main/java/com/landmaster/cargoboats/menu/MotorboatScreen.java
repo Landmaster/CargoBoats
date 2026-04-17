@@ -87,7 +87,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
     @Override
     protected void renderTooltip(@Nonnull GuiGraphics guiGraphics, int x, int y) {
         super.renderTooltip(guiGraphics, x, y);
-        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot instanceof MotorboatUpgradeSlot && !this.hoveredSlot.hasItem()) {
             guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), x, y);
         }
     }
