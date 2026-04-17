@@ -19,7 +19,8 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -28,7 +29,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -40,12 +40,11 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
-import net.neoforged.neoforge.energy.EmptyEnergyStorage;
 import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
-import net.neoforged.neoforge.fluids.capability.templates.EmptyFluidHandler;
-import net.neoforged.neoforge.items.wrapper.EmptyItemHandler;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.*;
+import net.neoforged.neoforge.transfer.EmptyResourceHandler;
+import net.neoforged.neoforge.transfer.energy.EmptyEnergyHandler;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -96,54 +95,54 @@ public class CargoBoats {
             builder.persistent(CompoundTag.CODEC));
 
     public static final DeferredBlock<DockBlock> DOCK = BLOCKS.registerBlock("dock", DockBlock::new,
-            BlockBehaviour.Properties.of()
+            props -> props
                     .mapColor(MapColor.WOOD)
                     .instrument(NoteBlockInstrument.BASS)
                     .strength(2.0F, 3.0F)
                     .sound(SoundType.WOOD));
     public static final DeferredBlock<BuoyBlock> BUOY = BLOCKS.registerBlock("buoy", BuoyBlock::new,
-            BlockBehaviour.Properties.of()
+            props -> props
                     .mapColor(MapColor.COLOR_RED)
                     .instrument(NoteBlockInstrument.BASS)
                     .strength(0.8F)
                     .sound(SoundType.METAL)
-                    .noCollission()
+                    .noCollision()
                     .lightLevel(state -> 12)
     );
     public static final DeferredBlock<MotorboatDetectorBlock> MOTORBOAT_DETECTOR = BLOCKS.registerBlock("motorboat_detector", MotorboatDetectorBlock::new,
-            BlockBehaviour.Properties.of()
+            props -> props
                     .mapColor(MapColor.COLOR_GREEN)
                     .instrument(NoteBlockInstrument.BASS)
                     .strength(0.8F)
                     .sound(SoundType.METAL)
     );
 
-    public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerSimpleBlockItem(DOCK);
-    public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new PlaceOnWaterBlockItem(BUOY.get(), props));
-    public static final DeferredItem<BlockItem> MOTORBOAT_DETECTOR_ITEM = ITEMS.registerSimpleBlockItem(MOTORBOAT_DETECTOR);
+    public static final DeferredItem<BlockItem> DOCK_ITEM = ITEMS.registerItem("dock", props -> new ModBlockItem(DOCK.get(), props));
+    public static final DeferredItem<BlockItem> BUOY_ITEM = ITEMS.registerItem("buoy", props -> new ModPlaceOnWaterBlockItem(BUOY.get(), props));
+    public static final DeferredItem<BlockItem> MOTORBOAT_DETECTOR_ITEM = ITEMS.registerItem("motorboat_detector", props -> new ModBlockItem(MOTORBOAT_DETECTOR.get(), props));
 
     public static final DeferredItem<MotorboatItem> MOTORBOAT_ITEM = ITEMS.registerItem("motorboat",
-            MotorboatItem::new, new Item.Properties().stacksTo(1).fireResistant());
+            MotorboatItem::new, props -> props.stacksTo(1).fireResistant());
     public static final DeferredItem<MotorboatItem> FLUID_MOTORBOAT_ITEM = ITEMS.registerItem("fluid_motorboat",
-            FluidMotorboatItem::new, new Item.Properties().stacksTo(1).fireResistant());
+            FluidMotorboatItem::new, props -> props.stacksTo(1).fireResistant());
     public static final DeferredItem<MotorboatProgrammerItem> MOTORBOAT_PROGRAMMER = ITEMS.registerItem("motorboat_programmer",
-            MotorboatProgrammerItem::new, new Item.Properties().stacksTo(1));
+            MotorboatProgrammerItem::new, props -> props.stacksTo(1));
     public static final DeferredItem<SpeedUpgradeItem> SPEED_UPGRADE = ITEMS.registerItem("speed_upgrade", SpeedUpgradeItem::new);
     public static final DeferredItem<CapacityUpgradeItem> CAPACITY_UPGRADE = ITEMS.registerItem("capacity_upgrade", CapacityUpgradeItem::new);
-    public static final DeferredItem<LavaUpgradeItem> LAVA_UPGRADE = ITEMS.registerItem("lava_upgrade", LavaUpgradeItem::new, new Item.Properties().fireResistant());
+    public static final DeferredItem<LavaUpgradeItem> LAVA_UPGRADE = ITEMS.registerItem("lava_upgrade", LavaUpgradeItem::new, props -> props.fireResistant());
     public static final DeferredItem<FishingUpgradeItem> FISHING_UPGRADE = ITEMS.registerItem("fishing_upgrade", FishingUpgradeItem::new);
     public static final DeferredItem<MotorboatTrackerItem> MOTORBOAT_TRACKER = ITEMS.registerItem("motorboat_tracker", MotorboatTrackerItem::new,
-            new Item.Properties().stacksTo(1));
+            props -> props.stacksTo(1));
     public static final DeferredItem<IcebreakerUpgradeItem> ICEBREAKER_UPGRADE = ITEMS.registerItem("icebreaker_upgrade", IcebreakerUpgradeItem::new);
 
     public static final Supplier<EntityType<Motorboat>> MOTORBOAT = ENTITIES.register("motorboat",
-            () -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
+            name -> EntityType.Builder.<Motorboat>of(Motorboat::new, MobCategory.MISC)
                     .sized(1.375F, 0.4375F).eyeHeight(0.4375F).clientTrackingRange(10)
-                    .build("motorboat"));
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, name)));
     public static final Supplier<EntityType<FluidMotorboat>> FLUID_MOTORBOAT = ENTITIES.register("fluid_motorboat",
-            () -> EntityType.Builder.<FluidMotorboat>of(FluidMotorboat::new, MobCategory.MISC)
+            name -> EntityType.Builder.<FluidMotorboat>of(FluidMotorboat::new, MobCategory.MISC)
                     .sized(1.375F, 0.4375F).eyeHeight(0.4375F).clientTrackingRange(10)
-                    .build("fluid_motorboat"));
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, name)));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TABS.register("cargoboats", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.cargoboats"))
@@ -174,24 +173,24 @@ public class CargoBoats {
             "adjustable_bounding_box", () -> IMenuTypeExtension.create(AdjustableBoundingBoxMenu::new));
 
     public static final Supplier<BlockEntityType<DockBlockEntity>> DOCK_TE = BLOCK_ENTITY_TYPES.register("dock",
-            () -> BlockEntityType.Builder.of(DockBlockEntity::new, DOCK.get()).build(null));
+            () -> new BlockEntityType<>(DockBlockEntity::new, DOCK.get()));
     public static final Supplier<BlockEntityType<BuoyBlockEntity>> BUOY_TE = BLOCK_ENTITY_TYPES.register("buoy",
-            () -> BlockEntityType.Builder.of(BuoyBlockEntity::new, BUOY.get()).build(null));
+            () -> new BlockEntityType<>(BuoyBlockEntity::new, BUOY.get()));
     public static final Supplier<BlockEntityType<MotorboatDetectorBlockEntity>> MOTORBOAT_DETECTOR_TE = BLOCK_ENTITY_TYPES.register("motorboat_detector",
-            () -> BlockEntityType.Builder.of(MotorboatDetectorBlockEntity::new, MOTORBOAT_DETECTOR.get()).build(null));
+            () -> new BlockEntityType<>(MotorboatDetectorBlockEntity::new, MOTORBOAT_DETECTOR.get()));
 
     public static final Supplier<AttachmentType<Long>> OVERFISHING_TICKS = ATTACHMENT_TYPES.register("overfishing_ticks",
-            () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG).build());
+            (name) -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG.fieldOf(name.toString())).build());
     public static final Supplier<AttachmentType<Long>> OVERFISHING_LAST_RESET = ATTACHMENT_TYPES.register("overfishing_last_reset",
-            () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
+            (name) -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG.fieldOf(name.toString())).build());
     public static final Supplier<AttachmentType<Long>> OVERFISHING_LAST_FISHED = ATTACHMENT_TYPES.register("overfishing_last_fished",
-            () -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG).build());
+            (name) -> AttachmentType.builder(() -> Long.MIN_VALUE).serialize(Codec.LONG.fieldOf(name.toString())).build());
 
     public static final BlockCapability<MotorboatPathfindingNode, Void> MOTORBOAT_PATHFINDING_NODE = BlockCapability.createVoid(
-            ResourceLocation.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class
+            Identifier.fromNamespaceAndPath(MODID, "motorboat_pathfinding_node"), MotorboatPathfindingNode.class
     );
 
-    public static final TicketController TICKET_CONTROLLER = new TicketController(ResourceLocation.fromNamespaceAndPath(MODID, "ticket_controller"));
+    public static final TicketController TICKET_CONTROLLER = new TicketController(Identifier.fromNamespaceAndPath(MODID, "ticket_controller"));
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
@@ -213,23 +212,23 @@ public class CargoBoats {
 
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerEntity(Capabilities.ItemHandler.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
-        event.registerEntity(Capabilities.ItemHandler.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
-        event.registerEntity(Capabilities.EnergyStorage.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity);
+        event.registerEntity(Capabilities.Item.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
+        event.registerEntity(Capabilities.Item.ENTITY_AUTOMATION, MOTORBOAT.get(), (entity, ctx) -> entity.itemHandler);
+        event.registerEntity(Capabilities.Energy.ENTITY, MOTORBOAT.get(), (entity, ctx) -> entity);
 
-        event.registerEntity(Capabilities.ItemHandler.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
-        event.registerEntity(Capabilities.FluidHandler.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.tank);
-        event.registerEntity(Capabilities.EnergyStorage.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity);
+        event.registerEntity(Capabilities.Item.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.combinedHandler);
+        event.registerEntity(Capabilities.Fluid.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity.tank);
+        event.registerEntity(Capabilities.Energy.ENTITY, FLUID_MOTORBOAT.get(), (entity, ctx) -> entity);
 
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
-                .map(motorboat -> motorboat.getCapability(Capabilities.ItemHandler.ENTITY_AUTOMATION, null))
-                .orElse(EmptyItemHandler.INSTANCE));
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
-                .map(motorboat -> motorboat.getCapability(Capabilities.EnergyStorage.ENTITY, null))
-                .orElse(EmptyEnergyStorage.INSTANCE));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
-                .map(motorboat -> motorboat.getCapability(Capabilities.FluidHandler.ENTITY, null))
-                .orElse(EmptyFluidHandler.INSTANCE));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
+                .map(motorboat -> motorboat.getCapability(Capabilities.Item.ENTITY_AUTOMATION, null))
+                .orElse(EmptyResourceHandler.instance()));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
+                .map(motorboat -> motorboat.getCapability(Capabilities.Energy.ENTITY, null))
+                .orElse(EmptyEnergyHandler.INSTANCE));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, DOCK_TE.get(), (te, dir) -> te.getDockedMotorboat()
+                .map(motorboat -> motorboat.getCapability(Capabilities.Fluid.ENTITY, null))
+                .orElse(EmptyResourceHandler.instance()));
 
         event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, DOCK_TE.get(), (te, ctx) -> te);
         event.registerBlockEntity(MOTORBOAT_PATHFINDING_NODE, BUOY_TE.get(), (te, ctx) -> te);
@@ -244,11 +243,11 @@ public class CargoBoats {
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("2");
         registrar.playToServer(SetAutomationPacket.TYPE, SetAutomationPacket.STREAM_CODEC, SetAutomationPacket::handle);
-        registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle);
+        registrar.playBidirectional(ModifySchedulePacket.TYPE, ModifySchedulePacket.STREAM_CODEC, ModifySchedulePacket::handle, ModifySchedulePacket::handle);
         registrar.playToClient(TrackMotorboatPacket.TYPE, TrackMotorboatPacket.STREAM_CODEC, TrackMotorboatPacket::handle);
         registrar.playToClient(SyncFluidMotorboatPacket.TYPE, SyncFluidMotorboatPacket.STREAM_CODEC, SyncFluidMotorboatPacket::handle);
-        registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle);
-        registrar.playBidirectional(AdjustBoundingBoxPacket.TYPE, AdjustBoundingBoxPacket.STREAM_CODEC, AdjustBoundingBoxPacket::handle);
+        registrar.playBidirectional(SetMotorboatPagePacket.TYPE, SetMotorboatPagePacket.STREAM_CODEC, SetMotorboatPagePacket::handle, SetMotorboatPagePacket::handle);
+        registrar.playBidirectional(AdjustBoundingBoxPacket.TYPE, AdjustBoundingBoxPacket.STREAM_CODEC, AdjustBoundingBoxPacket::handle, AdjustBoundingBoxPacket::handle);
     }
 
     @SubscribeEvent

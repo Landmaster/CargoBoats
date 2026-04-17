@@ -5,8 +5,6 @@ import com.landmaster.cargoboats.block.MotorboatPathfindingNode;
 import com.landmaster.cargoboats.menu.AdjustableBoundingBoxMenu;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,25 +20,6 @@ public class BuoyBlockEntity extends AdjustableBoundingBoxBlockEntity implements
         super(CargoBoats.BUOY_TE.get(), pos, blockState);
         minY = -maxDimension();
         maxY = -minY;
-    }
-
-    @Override
-    protected void loadAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        // legacy tags
-        if (tag.contains("OffsetX") && tag.contains("OffsetZ")) {
-            minX = tag.getByte("OffsetX");
-            minY = -maxDimension();
-            minZ = tag.getByte("OffsetZ");
-            maxX = minX;
-            maxY = -minY;
-            maxZ = minZ;
-        }
-    }
-
-    @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
     }
 
     @Override
@@ -68,14 +47,6 @@ public class BuoyBlockEntity extends AdjustableBoundingBoxBlockEntity implements
     @Override
     public AbstractContainerMenu createMenu(int containerId, @Nonnull Inventory playerInventory, @Nonnull Player player) {
         return new AdjustableBoundingBoxMenu(containerId, this);
-    }
-
-    @Nonnull
-    @Override
-    public CompoundTag getUpdateTag(@Nonnull HolderLookup.Provider registries) {
-        var result = new CompoundTag();
-        saveAdditional(result, registries);
-        return result;
     }
 
     @Override

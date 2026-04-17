@@ -7,10 +7,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class FluidMotorboatItem extends MotorboatItem {
     public FluidMotorboatItem(Properties properties) {
@@ -18,9 +19,9 @@ public class FluidMotorboatItem extends MotorboatItem {
     }
 
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.base_fluid", Config.MOTORBOAT_BASE_FLUID_CAPACITY.getAsInt())
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        super.appendHoverText(itemStack, context, display, builder, tooltipFlag);
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat.base_fluid", Config.MOTORBOAT_BASE_FLUID_CAPACITY.getAsInt())
                 .withStyle(ChatFormatting.AQUA));
     }
 

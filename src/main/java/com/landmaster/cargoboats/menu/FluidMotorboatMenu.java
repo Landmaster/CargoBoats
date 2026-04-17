@@ -74,6 +74,6 @@ public class FluidMotorboatMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return fluidMotorboat == null || player.canInteractWithEntity(fluidMotorboat, 4.0);
+        return fluidMotorboat == null || player.isWithinEntityInteractionRange(fluidMotorboat, 4.0);
     }
 }

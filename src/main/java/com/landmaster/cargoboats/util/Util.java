@@ -5,25 +5,25 @@ import com.landmaster.cargoboats.Config;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 public class Util {
-    public static int countItem(IItemHandler handler, Item item) {
+    public static int countItem(ResourceHandler<ItemResource> handler, Item item) {
         int count = 0;
-        for (int i=0; i<handler.getSlots(); ++i) {
-            var stack = handler.getStackInSlot(i);
-            if (stack.is(item)) {
-                count += stack.getCount();
+        for (int i=0; i<handler.size(); ++i) {
+            if (handler.getResource(i).is(item)) {
+                count += handler.getAmountAsInt(i);
             }
         }
         return count;
     }
 
-    public static ItemStack findItem(IItemHandler handler, Item item) {
-        for (int i=0; i<handler.getSlots(); ++i) {
-            var stack = handler.getStackInSlot(i);
-            if (stack.is(item)) {
-                return stack;
+    public static ItemStack findItem(ResourceHandler<ItemResource> handler, Item item) {
+        for (int i=0; i<handler.size(); ++i) {
+            var resource = handler.getResource(i);
+            if (resource.is(item)) {
+                return resource.toStack(handler.getAmountAsInt(i));
             }
         }
         return ItemStack.EMPTY;

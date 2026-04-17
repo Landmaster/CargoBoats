@@ -40,6 +40,6 @@ public class AdjustableBoundingBoxMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return detector != null && (!detector.isRemoved() && player.canInteractWithBlock(detector.getBlockPos(), 4.0));
+        return detector != null && (!detector.isRemoved() && player.isWithinBlockInteractionRange(detector.getBlockPos(), 4.0));
     }
 }

@@ -8,11 +8,14 @@ import com.landmaster.cargoboats.entity.Motorboat;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nonnull;
@@ -125,19 +128,15 @@ public class DockBlockEntity extends BlockEntity implements MotorboatPathfinding
     }
 
     @Override
-    protected void loadAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.hasUUID("DockedMotorboat")) {
-            dockedMotorboatId = tag.getUUID("DockedMotorboat");
-            dockedMotorboat = null;
-        }
+    protected void loadAdditional(@Nonnull ValueInput input) {
+        super.loadAdditional(input);
+        dockedMotorboatId = input.read("DockedMotorboat", UUIDUtil.CODEC).orElse(null);
+        dockedMotorboat = null;
     }
 
     @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        if (dockedMotorboatId != null) {
-            tag.putUUID("DockedMotorboat", dockedMotorboatId);
-        }
+    protected void saveAdditional(@Nonnull ValueOutput output) {
+        super.saveAdditional(output);
+        output.storeNullable("DockedMotorboat", UUIDUtil.CODEC, dockedMotorboatId);
     }
 }

@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import javax.annotation.Nonnull;
 
 public record AdjustBoundingBoxPacket(BlockPos pos, byte minX, byte minY, byte minZ, byte maxX, byte maxY, byte maxZ) implements CustomPacketPayload {
-    public static final Type<AdjustBoundingBoxPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
+    public static final Type<AdjustBoundingBoxPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             CargoBoats.MODID, "adjust_bounding_box"
     ));
 
@@ -53,8 +53,8 @@ public record AdjustBoundingBoxPacket(BlockPos pos, byte minX, byte minY, byte m
             return;
         }
 
-        var chunkPos = new ChunkPos(pos);
-        if (level.hasChunk(chunkPos.x, chunkPos.z)) {
+        var chunkPos = ChunkPos.containing(pos);
+        if (level.hasChunk(chunkPos.x(), chunkPos.z())) {
             if (level.getBlockEntity(pos) instanceof AdjustableBoundingBoxBlockEntity te) {
                 var maxDim = te.maxDimension();
 

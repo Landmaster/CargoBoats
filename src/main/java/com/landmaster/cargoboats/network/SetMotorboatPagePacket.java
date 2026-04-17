@@ -7,13 +7,13 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
 
 public record SetMotorboatPagePacket(int page) implements CustomPacketPayload {
-    public static final Type<SetMotorboatPagePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
+    public static final Type<SetMotorboatPagePacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             CargoBoats.MODID, "set_motorboat_page"
     ));
 
@@ -24,7 +24,7 @@ public record SetMotorboatPagePacket(int page) implements CustomPacketPayload {
 
     public void handle(IPayloadContext ctx) {
         if (ctx.player().containerMenu instanceof MotorboatMenu menu) {
-            if (ctx.player().level().isClientSide) {
+            if (ctx.player().level().isClientSide()) {
                 menu.page = page;
             } else {
                 menu.getMotorboat().ifPresent(motorboat -> {

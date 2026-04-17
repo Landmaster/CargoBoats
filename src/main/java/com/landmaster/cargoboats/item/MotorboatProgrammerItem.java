@@ -10,12 +10,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,14 +49,14 @@ public class MotorboatProgrammerItem extends Item {
                             ).collect(Collectors.toList())
                     )
             );
-            if (level.isClientSide && player != null) {
-                player.displayClientMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()), false);
+            if (level.isClientSide() && player != null) {
+                player.sendSystemMessage(Component.translatable("message.cargoboats.dock_added", pos.toShortString()));
                 if (!prevSchedule.entries().isEmpty()) {
                     var lastEntry = prevSchedule.entries().getLast();
                     if (lastEntry.dimension() == level.dimension()) {
                         var lastPos = prevSchedule.entries().getLast().dock();
-                        player.displayClientMessage(Component.translatable("message.cargoboats.dock_added.distance",
-                                new DecimalFormat("0.0").format(Math.sqrt(lastPos.distSqr(pos)))), false);
+                        player.sendSystemMessage(Component.translatable("message.cargoboats.dock_added.distance",
+                                new DecimalFormat("0.0").format(Math.sqrt(lastPos.distSqr(pos)))));
                     }
                 }
             }
@@ -65,20 +67,21 @@ public class MotorboatProgrammerItem extends Item {
 
     @Nonnull
     @Override
-    public InteractionResultHolder<ItemStack> use(@Nonnull Level level, @Nonnull Player player, @Nonnull InteractionHand usedHand) {
+    public InteractionResult use(@Nonnull Level level, @Nonnull Player player, @Nonnull InteractionHand usedHand) {
         var stack = player.getItemInHand(usedHand);
         return player.openMenu(
                 new SimpleMenuProvider((id, inv, thePlayer) -> new MotorboatProgrammerMenu(id, stack), stack.getHoverName()),
                 buf -> MotorboatSchedule.STREAM_CODEC.encode(buf, stack.get(CargoBoats.MOTORBOAT_SCHEDULE))
-        ).isPresent() ? InteractionResultHolder.success(stack) : InteractionResultHolder.fail(stack);
+        ).isPresent() ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
         for (int i=0; i<3; ++i) {
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
+            builder.accept(Component.translatable("tooltip.cargoboats.motorboat_programmer_instructions." + i).withStyle(ChatFormatting.AQUA));
         }
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_programmer_status", stack.get(CargoBoats.MOTORBOAT_SCHEDULE).entries().size()).withStyle(ChatFormatting.YELLOW));
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat_programmer_status", itemStack.get(CargoBoats.MOTORBOAT_SCHEDULE).entries().size()).withStyle(ChatFormatting.YELLOW));
     }
 
     @Override

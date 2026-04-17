@@ -6,18 +6,20 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class LavaUpgradeItem extends Item implements MotorboatUpgrade {
     public LavaUpgradeItem(Properties properties) {
         super(properties);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.lava_upgrade").withStyle(ChatFormatting.AQUA));
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.lava_upgrade").withStyle(ChatFormatting.AQUA));
     }
 
     @Override

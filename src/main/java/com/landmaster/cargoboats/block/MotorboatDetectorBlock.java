@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -27,19 +28,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInteractable {
+public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInteractable, TooltipBlock {
     public static final MapCodec<MotorboatDetectorBlock> CODEC = simpleCodec(MotorboatDetectorBlock::new);
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
 
     public MotorboatDetectorBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(POWERED, false));
-    }
-
-    @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.motorboat_detector").withStyle(ChatFormatting.AQUA));
     }
 
     @Nonnull
@@ -51,7 +48,7 @@ public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInt
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> blockEntityType) {
-        return !level.isClientSide ? MotorboatDetectorBlockEntity::serverTick : null;
+        return !level.isClientSide() ? MotorboatDetectorBlockEntity::serverTick : null;
     }
 
     @Nullable
@@ -75,7 +72,7 @@ public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInt
     @Nonnull
     @Override
     protected InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hitResult) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             var blockentity = level.getBlockEntity(pos);
@@ -103,5 +100,10 @@ public class MotorboatDetectorBlock extends BaseEntityBlock implements WrenchInt
     @Override
     protected int getDirectSignal(@Nonnull BlockState state, @Nonnull BlockGetter level, @Nonnull BlockPos pos, @Nonnull Direction direction) {
         return getSignal(state, level, pos, direction);
+    }
+
+    @Override
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat.motorboat_detector").withStyle(ChatFormatting.AQUA));
     }
 }

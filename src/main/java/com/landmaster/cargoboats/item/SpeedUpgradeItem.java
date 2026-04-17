@@ -7,10 +7,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import javax.annotation.Nonnull;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SpeedUpgradeItem extends Item implements MotorboatUpgrade {
     public SpeedUpgradeItem(Properties properties) {
@@ -22,11 +24,12 @@ public class SpeedUpgradeItem extends Item implements MotorboatUpgrade {
         return Config.MOTORBOAT_SPEED_MULTIPLIERS.get().size();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
         var multipliers = Config.MOTORBOAT_SPEED_MULTIPLIERS.get();
         for (int i=0; i<multipliers.size(); ++i) {
-            tooltipComponents.add(Component.translatable(
+            builder.accept(Component.translatable(
                     "tooltip.cargoboats.speed_upgrade", i+1,
                     new DecimalFormat("0.0#").format(multipliers.get(i)))
                     .withStyle(ChatFormatting.AQUA));

@@ -6,30 +6,35 @@ import com.landmaster.cargoboats.network.SetMotorboatPagePacket;
 import com.landmaster.cargoboats.util.ClientUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import javax.annotation.Nonnull;
 
 public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
-    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/motorboat.png");
+    private static final Identifier CONTAINER_BACKGROUND = Identifier.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/motorboat.png");
     public MotorboatScreen(MotorboatMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        imageHeight = 222;
-        inventoryLabelY = imageHeight - 94;
+        super(menu, playerInventory, title, 176, 222);
     }
 
     private class PageButton extends Button {
         public PageButton(int x, int y, int delta) {
             super(x, y, 12, 12, Component.literal(delta >= 0 ? "+" : "-"), btn -> {
                 int readPageLimit = menu.dataSlots.get(3).get();
-                PacketDistributor.sendToServer(new SetMotorboatPagePacket(Math.clamp(menu.page + delta, 0, readPageLimit - 1)));
+                ClientPacketDistributor.sendToServer(new SetMotorboatPagePacket(Math.clamp(menu.page + delta, 0, readPageLimit - 1)));
             }, DEFAULT_NARRATION);
+        }
+
+        @Override
+        protected void extractContents(@Nonnull GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, float v) {
+            extractDefaultSprite(guiGraphicsExtractor);
+            extractDefaultLabel(guiGraphicsExtractor.textRenderer());
         }
     }
 
@@ -43,12 +48,12 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    protected void extractLabels(@Nonnull GuiGraphicsExtractor graphics, int xm, int ym) {
+        super.extractLabels(graphics, xm, ym);
         int writePageLimit = menu.dataSlots.get(2).get();
         int readPageLimit = menu.dataSlots.get(3).get();
         var pageStyle = menu.page < writePageLimit ? new ChatFormatting[0] : new ChatFormatting[] {ChatFormatting.STRIKETHROUGH};
-        guiGraphics.drawString(
+        graphics.text(
                 font,
                 Component.translatable(writePageLimit < readPageLimit ? "gui.cargoboats.page.asterisk" : "gui.cargoboats.page",
                         menu.page+1, readPageLimit).withStyle(pageStyle),
@@ -59,36 +64,34 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
                 var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
                 var x = leftPos + 8;
                 var y = topPos + 34;
-                guiGraphics.drawString(font, componentToDraw, x, y, 0xFF000000, false);
+                graphics.text(font, componentToDraw, x, y, 0xFF000000, false);
                 var width = font.width(componentToDraw);
-                if (mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + font.lineHeight) {
-                    guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.next_stop",
-                                    entry.dock().toShortString(), entry.dimension().location().toString()),
-                            mouseX, mouseY);
+                if (xm >= x && ym >= y && xm < x + width && ym < y + font.lineHeight) {
+                    graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.next_stop",
+                                    entry.dock().toShortString(), entry.dimension().identifier().toString()),
+                            xm, ym);
                 }
             });
-            ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
+            ClientUtil.drawEnergyBarTooltip(motorboat.getAmountAsInt(), motorboat.getCapacityAsInt(), graphics, leftPos + 8, topPos + 16, xm, ym, font);
         }
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // main background
-        guiGraphics.blit(CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
-
+    public void extractBackground(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(graphics, mouseX, mouseY, a);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             // energy
-            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16);
+            ClientUtil.drawEnergyBar(motorboat.getAmountAsInt(), motorboat.getCapacityAsInt(), graphics, leftPos + 8, topPos + 16);
         }
     }
 
     @Override
-    protected void renderTooltip(@Nonnull GuiGraphics guiGraphics, int x, int y) {
-        super.renderTooltip(guiGraphics, x, y);
+    protected void extractTooltip(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.extractTooltip(graphics, mouseX, mouseY);
         if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
-            guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), x, y);
+            graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), mouseX, mouseY);
         }
     }
 }

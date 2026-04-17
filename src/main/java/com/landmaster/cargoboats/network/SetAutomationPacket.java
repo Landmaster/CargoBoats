@@ -1,19 +1,18 @@
 package com.landmaster.cargoboats.network;
 
 import com.landmaster.cargoboats.CargoBoats;
-import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.menu.MotorboatMenu;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
 
 public record SetAutomationPacket(boolean enabled) implements CustomPacketPayload {
-    public static final Type<SetAutomationPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
+    public static final Type<SetAutomationPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             CargoBoats.MODID, "set_automation"
     ));
 

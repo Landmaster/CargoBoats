@@ -11,14 +11,17 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.function.Consumer;
 
 @EventBusSubscriber
 public class MotorboatTrackerItem extends Item {
@@ -31,16 +34,17 @@ public class MotorboatTrackerItem extends Item {
         return stack.has(CargoBoats.TRACKED_MOTORBOAT);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat_tracker").withStyle(ChatFormatting.AQUA));
-        var uuid = stack.get(CargoBoats.TRACKED_MOTORBOAT);
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat_tracker").withStyle(ChatFormatting.AQUA));
+        var uuid = itemStack.get(CargoBoats.TRACKED_MOTORBOAT);
         if (uuid != null) {
-            tooltipComponents.add(Component.translatable("tooltip.cargoboats.tracked_motorboat", uuid.toString()).withStyle(ChatFormatting.YELLOW));
+            builder.accept(Component.translatable("tooltip.cargoboats.tracked_motorboat", uuid.toString()).withStyle(ChatFormatting.YELLOW));
         }
     }
 
-    private static final Map<Player, Vector3f> playerToTracked = new WeakHashMap<>();
+    private static final Map<Player, Vector3fc> playerToTracked = new WeakHashMap<>();
 
     @SubscribeEvent
     private static void onPlayerTick(PlayerTickEvent.Pre event) {
@@ -52,7 +56,7 @@ public class MotorboatTrackerItem extends Item {
                     .map(level::getEntity)
                     .filter(Objects::nonNull)
                     .findFirst()
-                            .map(ent -> ent.position().toVector3f());
+                            .map(ent -> (Vector3fc) ent.position().toVector3f());
             var unwrappedPos = pos.orElse(null);
             if (!Objects.equals(playerToTracked.get(event.getEntity()), unwrappedPos)) {
                 playerToTracked.put(event.getEntity(), unwrappedPos);

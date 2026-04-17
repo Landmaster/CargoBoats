@@ -8,10 +8,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class CapacityUpgradeItem extends Item implements MotorboatUpgrade {
     public CapacityUpgradeItem(Properties properties) {
@@ -26,8 +28,9 @@ public class CapacityUpgradeItem extends Item implements MotorboatUpgrade {
         return Config.MOTORBOAT_ITEM_CAPACITY_MULTIPLIER.get().size();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
         var itemMultipliers = Config.MOTORBOAT_ITEM_CAPACITY_MULTIPLIER.get();
         var fluidCapacities = Config.MOTORBOAT_FLUID_CAPACITY.get();
         for (int i=0; i<Math.max(itemMultipliers.size(), fluidCapacities.size()); ++i) {
@@ -39,7 +42,7 @@ public class CapacityUpgradeItem extends Item implements MotorboatUpgrade {
             if (i < fluidCapacities.size()) {
                 subComponents.add(Component.translatable("tooltip.cargoboats.capacity_upgrade.fluids", fluidCapacities.get(i)));
             }
-            tooltipComponents.add(Component.translatable(
+            builder.accept(Component.translatable(
                     "tooltip.cargoboats.capacity_upgrade." + (subComponents.size()-1),
                     subComponents.toArray()
             ).withStyle(ChatFormatting.AQUA));

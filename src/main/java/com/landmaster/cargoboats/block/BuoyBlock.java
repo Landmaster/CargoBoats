@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -23,9 +24,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.function.Consumer;
 
-public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
+public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable, TooltipBlock {
     protected static final VoxelShape AABB = Block.box(4.0, 0.0, 4.0, 12.0, 14.0, 12.0);
 
     public BuoyBlock(Properties properties) {
@@ -36,12 +37,6 @@ public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return simpleCodec(BuoyBlock::new);
-    }
-
-    @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.buoy.0").withStyle(ChatFormatting.AQUA));
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.buoy.1").withStyle(ChatFormatting.AQUA));
     }
 
     @Nonnull
@@ -65,7 +60,7 @@ public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
     @Nonnull
     @Override
     protected InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hitResult) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
             var blockentity = level.getBlockEntity(pos);
@@ -74,5 +69,11 @@ public class BuoyBlock extends BaseEntityBlock implements WrenchInteractable {
             }
             return InteractionResult.CONSUME;
         }
+    }
+
+    @Override
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat.buoy.0").withStyle(ChatFormatting.AQUA));
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat.buoy.1").withStyle(ChatFormatting.AQUA));
     }
 }

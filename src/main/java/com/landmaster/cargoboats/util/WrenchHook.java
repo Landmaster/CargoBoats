@@ -2,7 +2,7 @@ package com.landmaster.cargoboats.util;
 
 import com.landmaster.cargoboats.block.WrenchInteractable;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -12,7 +12,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @EventBusSubscriber
 public class WrenchHook {
-    public static final TagKey<Item> WRENCH_TAG = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "tools/wrench"));
+    public static final TagKey<Item> WRENCH_TAG = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "tools/wrench"));
 
     @SubscribeEvent
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -24,7 +24,7 @@ public class WrenchHook {
             var pos = event.getPos();
             var state = event.getLevel().getBlockState(pos);
             if (state.getBlock() instanceof WrenchInteractable wrenchInteractable) {
-                var result = InteractionResult.PASS;
+                InteractionResult result;
                 if (event.getEntity().isSecondaryUseActive()) {
                     result = wrenchInteractable.disassemble(event.getLevel(), event.getPos(), event.getEntity());
                 } else {

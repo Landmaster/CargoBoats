@@ -1,12 +1,12 @@
 package com.landmaster.cargoboats.item;
 
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 
 import javax.annotation.Nonnull;
 
-public class MotorboatUpgradeItemHandler extends ItemStackHandler {
+public class MotorboatUpgradeItemHandler extends ItemStacksResourceHandler {
     public final EntityType<?> entityType;
 
     public MotorboatUpgradeItemHandler(EntityType<?> entityType, int slots) {
@@ -15,22 +15,22 @@ public class MotorboatUpgradeItemHandler extends ItemStackHandler {
     }
 
     @Override
-    public boolean isItemValid(int slot, ItemStack stack) {
-        if (!(stack.getItem() instanceof MotorboatUpgrade)) {
+    public boolean isValid(int index, ItemResource resource) {
+        if (!(resource.getItem() instanceof MotorboatUpgrade)) {
             return false;
         }
         for (int i=0; i<stacks.size(); ++i) {
-            if (i != slot && stacks.get(i).getItem() == stack.getItem()) {
+            if (i != index && stacks.get(i).getItem() == resource.getItem()) {
                 return false;
             }
         }
-        return true;
+        return super.isValid(index, resource);
     }
 
     @Override
-    protected int getStackLimit(int slot, @Nonnull ItemStack stack) {
-        int limit = super.getStackLimit(slot, stack);
-        if (stack.getItem() instanceof MotorboatUpgrade upgrade) {
+    protected int getCapacity(int index, @Nonnull ItemResource resource) {
+        int limit = super.getCapacity(index, resource);
+        if (resource.getItem() instanceof MotorboatUpgrade upgrade) {
             limit = Math.min(limit, upgrade.maxUpgradeAmount(entityType));
         }
         return limit;

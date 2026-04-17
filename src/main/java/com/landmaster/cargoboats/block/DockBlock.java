@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
@@ -18,24 +19,20 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class DockBlock extends BaseEntityBlock implements WrenchInteractable {
+public class DockBlock extends BaseEntityBlock implements WrenchInteractable, TooltipBlock {
     public static final MapCodec<DockBlock> CODEC = simpleCodec(DockBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public DockBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.motorboat.dock").withStyle(ChatFormatting.AQUA));
     }
 
     @Override
@@ -44,7 +41,7 @@ public class DockBlock extends BaseEntityBlock implements WrenchInteractable {
     }
 
     @Override
-    protected int getAnalogOutputSignal(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos) {
+    protected int getAnalogOutputSignal(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Direction direction) {
         if (level.getBlockEntity(pos) instanceof DockBlockEntity dockBlockEntity && dockBlockEntity.getDockedMotorboat().isPresent()) {
             return 15;
         }
@@ -54,7 +51,7 @@ public class DockBlock extends BaseEntityBlock implements WrenchInteractable {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> blockEntityType) {
-        return !level.isClientSide ? DockBlockEntity::serverTick : null;
+        return !level.isClientSide() ? DockBlockEntity::serverTick : null;
     }
 
     @Nonnull
@@ -97,5 +94,10 @@ public class DockBlock extends BaseEntityBlock implements WrenchInteractable {
     @Override
     protected RenderShape getRenderShape(@Nonnull BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.motorboat.dock").withStyle(ChatFormatting.AQUA));
     }
 }

@@ -8,8 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +21,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
     public MotorboatMenu(int containerId, Inventory playerInventory) {
         this(CargoBoats.MOTORBOAT_MENU.get(), containerId, playerInventory,
                 new MotorboatUpgradeItemHandler(CargoBoats.MOTORBOAT.get(), Motorboat.NUM_UPGRADES),
-                        new ItemStackHandler(27 ), new SimpleContainerData(Motorboat.CONTAINER_SLOTS), false);
+                        new ItemStacksResourceHandler(27 ), new SimpleContainerData(Motorboat.CONTAINER_SLOTS), false);
     }
 
     public MotorboatMenu(int containerId, Inventory playerInventory, Motorboat motorboat) {
@@ -32,7 +31,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
     }
 
     public MotorboatMenu(MenuType<?> type, int containerId, Inventory playerInventory, MotorboatUpgradeItemHandler upgradeHandler,
-                         IItemHandler itemHandler, ContainerData containerData, boolean paginateItems) {
+                         ItemStacksResourceHandler itemHandler, ContainerData containerData, boolean paginateItems) {
         super(type, containerId);
 
         for (int i=0; i<Motorboat.NUM_UPGRADES; ++i) {
@@ -42,7 +41,7 @@ public class MotorboatMenu extends AbstractContainerMenu {
         for (int row=0; row<3; ++row) {
             for (int col=0; col<9; ++col) {
                 final int theRow = row, theCol = col;
-                addSlot(new DynamicIndexSlot(itemHandler, () -> (paginateItems ? page * 27 : 0) + theRow * 9 + theCol,
+                addSlot(new DynamicIndexSlot(itemHandler, itemHandler::set, () -> (paginateItems ? page * 27 : 0) + theRow * 9 + theCol,
                         8 + col * 18, 72 + row * 18) {
                     @Override
                     public boolean mayPlace(ItemStack stack) {
@@ -99,6 +98,6 @@ public class MotorboatMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(@Nonnull Player player) {
-        return motorboat == null || player.canInteractWithEntity(motorboat, 4.0);
+        return motorboat == null || player.isWithinEntityInteractionRange(motorboat, 4.0);
     }
 }

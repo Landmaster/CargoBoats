@@ -1,10 +1,11 @@
 package com.landmaster.cargoboats.mixin;
 
 import com.landmaster.cargoboats.entity.Motorboat;
-import net.minecraft.advancements.critereon.FishingHookPredicate;
+import net.minecraft.advancements.criterion.FishingHookPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class FishingHookPredicateMixin {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     @Shadow
+    @Final
     private Optional<Boolean> inOpenWater;
 
     @Inject(method = "matches(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;)Z", at = @At("HEAD"), cancellable = true)

@@ -7,14 +7,14 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 
 public record ModifySchedulePacket(int index, int delta) implements CustomPacketPayload {
-    public static final Type<ModifySchedulePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
+    public static final Type<ModifySchedulePacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             CargoBoats.MODID, "modify_schedule"
     ));
 
@@ -37,7 +37,7 @@ public record ModifySchedulePacket(int index, int delta) implements CustomPacket
                 }
             }
             menu.setSchedule(new MotorboatSchedule(newEntries));
-            if (!ctx.player().level().isClientSide) {
+            if (!ctx.player().level().isClientSide()) {
                 ctx.reply(this);
             }
         }

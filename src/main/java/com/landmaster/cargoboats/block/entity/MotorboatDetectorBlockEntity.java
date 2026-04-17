@@ -5,8 +5,6 @@ import com.landmaster.cargoboats.block.MotorboatDetectorBlock;
 import com.landmaster.cargoboats.entity.Motorboat;
 import com.landmaster.cargoboats.menu.AdjustableBoundingBoxMenu;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,6 +13,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nonnull;
@@ -40,15 +40,15 @@ public class MotorboatDetectorBlockEntity extends AdjustableBoundingBoxBlockEnti
     }
 
     @Override
-    protected void loadAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.output = tag.getByte("output");
+    protected void loadAdditional(@Nonnull ValueInput input) {
+        super.loadAdditional(input);
+        output = input.getByteOr("output", (byte) 0);
     }
 
     @Override
-    protected void saveAdditional(@Nonnull CompoundTag tag, @Nonnull HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putByte("output", (byte)this.output);
+    protected void saveAdditional(@Nonnull ValueOutput output) {
+        super.saveAdditional(output);
+        output.putByte("output", (byte) this.output);
     }
 
     @Override

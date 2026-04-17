@@ -2,19 +2,20 @@ package com.landmaster.cargoboats.menu;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.network.AdjustBoundingBoxPacket;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import javax.annotation.Nonnull;
 
 public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<AdjustableBoundingBoxMenu> {
-    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/adjustable_bounding_box.png");
+    private static final Identifier CONTAINER_BACKGROUND = Identifier.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/adjustable_bounding_box.png");
 
     private class AdjustingButton extends Button {
         public AdjustingButton(int x, int y, int delta, Direction direction) {
@@ -48,17 +49,21 @@ public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<Adjusta
                             break;
                     }
 
-                    PacketDistributor.sendToServer(new AdjustBoundingBoxPacket(menu.detector.getBlockPos(),
+                    ClientPacketDistributor.sendToServer(new AdjustBoundingBoxPacket(menu.detector.getBlockPos(),
                             (byte) minX, (byte) minY, (byte) minZ, (byte) maxX, (byte) maxY, (byte) maxZ));
                 }
             }, DEFAULT_NARRATION);
         }
+
+        @Override
+        protected void extractContents(@Nonnull GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, float v) {
+            extractDefaultSprite(guiGraphicsExtractor);
+            extractDefaultLabel(guiGraphicsExtractor.textRenderer());
+        }
     }
 
     public AdjustableBoundingBoxScreen(AdjustableBoundingBoxMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        imageWidth = 145;
-        imageHeight = 109;
+        super(menu, playerInventory, title, 145, 109);
     }
 
     @Override
@@ -79,36 +84,31 @@ public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<Adjusta
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    protected void extractLabels(@Nonnull GuiGraphicsExtractor graphics, int xm, int ym) {
+        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
         if (menu.detector != null) {
-            guiGraphics.drawString(font,
+            graphics.text(font,
                     Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), leftPos + 8, topPos + 22, 0xff000000, false);
-            guiGraphics.drawString(font,
+            graphics.text(font,
                     Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), leftPos + 8, topPos + 52, 0xff000000, false);
             var text = Integer.toString(menu.detector.minX);
-            guiGraphics.drawString(font, text, leftPos + 28 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, leftPos + 28 - font.width(text)/2, topPos + 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxX);
-            guiGraphics.drawString(font, text, leftPos + 28 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, leftPos + 28 - font.width(text)/2, topPos + 68, 0xff000000, false);
             text = Integer.toString(menu.detector.minY);
-            guiGraphics.drawString(font, text, leftPos + 70 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, leftPos + 70 - font.width(text)/2, topPos + 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxY);
-            guiGraphics.drawString(font, text, leftPos + 70 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, leftPos + 70 - font.width(text)/2, topPos + 68, 0xff000000, false);
             text = Integer.toString(menu.detector.minZ);
-            guiGraphics.drawString(font, text, leftPos + 112 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, leftPos + 112 - font.width(text)/2, topPos + 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxZ);
-            guiGraphics.drawString(font, text, leftPos + 112 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, leftPos + 112 - font.width(text)/2, topPos + 68, 0xff000000, false);
         }
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // main background
-        guiGraphics.blit(CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
-    }
-
-    @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+    public void extractBackground(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(graphics, mouseX, mouseY, a);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
     }
 }

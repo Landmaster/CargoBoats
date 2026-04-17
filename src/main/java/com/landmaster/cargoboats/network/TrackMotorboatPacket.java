@@ -6,15 +6,15 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public record TrackMotorboatPacket(Optional<Vector3f> pos) implements CustomPacketPayload {
-    public static final Type<TrackMotorboatPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
+public record TrackMotorboatPacket(Optional<Vector3fc> pos) implements CustomPacketPayload {
+    public static final Type<TrackMotorboatPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             CargoBoats.MODID, "track_motorboat"
     ));
 

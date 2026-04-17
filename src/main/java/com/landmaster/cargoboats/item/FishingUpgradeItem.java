@@ -8,9 +8,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class FishingUpgradeItem extends Item implements MotorboatUpgrade {
     public FishingUpgradeItem(Properties properties) {
@@ -22,9 +24,10 @@ public class FishingUpgradeItem extends Item implements MotorboatUpgrade {
         return entityType == CargoBoats.FLUID_MOTORBOAT.get() ? 0 : 1;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull TooltipContext context, @Nonnull List<Component> tooltipComponents, @Nonnull TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.fishing_upgrade.0").withStyle(ChatFormatting.AQUA));
-        tooltipComponents.add(Component.translatable("tooltip.cargoboats.fishing_upgrade.1", Config.FISHING_ENERGY_CONSUMPTION.getAsInt()).withStyle(ChatFormatting.AQUA));
+    public void appendHoverText(@Nonnull ItemStack itemStack, @Nonnull TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> builder, @Nonnull TooltipFlag tooltipFlag) {
+        builder.accept(Component.translatable("tooltip.cargoboats.fishing_upgrade.0").withStyle(ChatFormatting.AQUA));
+        builder.accept(Component.translatable("tooltip.cargoboats.fishing_upgrade.1", Config.FISHING_ENERGY_CONSUMPTION.getAsInt()).withStyle(ChatFormatting.AQUA));
     }
 }

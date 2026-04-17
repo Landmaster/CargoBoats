@@ -16,8 +16,6 @@ import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -26,26 +24,30 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.animal.fish.WaterAnimal;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -54,11 +56,14 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
-import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
+import net.neoforged.neoforge.transfer.CombinedResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.PlayerInventoryWrapper;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableDouble;
 
@@ -67,11 +72,11 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
-public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, HasCustomInventoryScreen {
+public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryScreen, EnergyHandler {
     public static final long STUCK_TIME_THRESHOLD = 100;
 
-    public final AnimationState rotorAnimationState = new AnimationState();
     public float rotorSpeed = 0;
 
     private static final EntityDataAccessor<MotorboatSchedule> MOTORBOAT_SCHEDULE = SynchedEntityData.defineId(
@@ -97,10 +102,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public static final int NUM_UPGRADES = 5;
     public final MotorboatUpgradeItemHandler upgradeHandler;
     public final ExpandableItemStackHandler itemHandler;
-    public final IItemHandlerModifiable combinedHandler;
+    public final ResourceHandler<ItemResource> combinedHandler;
     private long pathCheckTimestamp = Long.MIN_VALUE;
     private long stuckTime = STUCK_TIME_THRESHOLD;
-    private int fishingCounter = 0;
     private final int baseInvSize;
     private boolean icebreakerActive;
 
@@ -113,7 +117,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
                 case 0 -> getId();
                 case 1 -> automationEnabled ? 1 : 0;
                 case 2 -> itemCapacityMultiplier();
-                case 3 -> baseInvSize == 0 ? 0 : Math.ceilDiv(itemHandler.getSlots(), baseInvSize);
+                case 3 -> baseInvSize == 0 ? 0 : Math.ceilDiv(itemHandler.size(), baseInvSize);
                 default -> 0;
             };
         }
@@ -128,16 +132,16 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
     };
 
-    public Motorboat(EntityType<? extends Motorboat> entityType, Level level, int invSize) {
-        super(entityType, level);
+    public Motorboat(EntityType<? extends Motorboat> entityType, Level level, int invSize, Supplier<Item> itemSupplier) {
+        super(entityType, level, itemSupplier);
         this.upgradeHandler = new MotorboatUpgradeItemHandler(entityType, NUM_UPGRADES);
         this.itemHandler = new ExpandableItemStackHandler(invSize);
-        this.combinedHandler = new CombinedInvWrapper(upgradeHandler, itemHandler);
+        this.combinedHandler = new CombinedResourceHandler<>(upgradeHandler, itemHandler);
         this.baseInvSize = invSize;
     }
 
     public Motorboat(EntityType<? extends Motorboat> entityType, Level level) {
-        this(entityType, level, 27);
+        this(entityType, level, 27, CargoBoats.MOTORBOAT_ITEM::get);
     }
 
     public Motorboat(Level level, double x, double y, double z) {
@@ -150,9 +154,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     public ItemStack getWrenchDrop() {
         var stack = new ItemStack(getDropItem());
-        var tag = new CompoundTag();
-        addMotorboatSaveData(tag);
-        stack.set(CargoBoats.MOTORBOAT_SAVE_DATA, tag);
+        var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registryAccess());
+        addMotorboatSaveData(output);
+        stack.set(CargoBoats.MOTORBOAT_SAVE_DATA, output.buildResult());
         stack.set(CargoBoats.MOTORBOAT_HAS_DATA, true);
         return stack;
     }
@@ -186,37 +190,35 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     @Override
-    protected void readAdditionalSaveData(@Nonnull CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
-        readMotorboatSaveData(compound);
+    protected void readAdditionalSaveData(@Nonnull ValueInput input) {
+        super.readAdditionalSaveData(input);
+        readMotorboatSaveData(input);
     }
 
-    public void readMotorboatSaveData(CompoundTag compound) {
-        getEntityData().set(ENERGY, compound.getInt("EnergyStorage"));
-        getEntityData().set(MOTORBOAT_SCHEDULE, MotorboatSchedule.CODEC.parse(NbtOps.INSTANCE, compound.get("MotorboatSchedule")).getOrThrow());
-        getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
-        dockTime = compound.getInt("DockTime");
-        automationEnabled = compound.getBoolean("AutomationEnabled");
-        upgradeHandler.deserializeNBT(registryAccess(), compound.getCompound("Upgrades"));
-        itemHandler.deserializeNBT(registryAccess(), compound.getCompound("Inventory"));
-        fishingCounter = compound.getInt("FishingCounter");
+    public void readMotorboatSaveData(ValueInput input) {
+        getEntityData().set(ENERGY, input.getIntOr("EnergyStorage", 0));
+        getEntityData().set(MOTORBOAT_SCHEDULE, input.read("MotorboatSchedule", MotorboatSchedule.CODEC).get());
+        getEntityData().set(NEXT_STOP_INDEX, input.getIntOr("NextStop", 0));
+        dockTime = input.getIntOr("DockTime", 0);
+        automationEnabled = input.getBooleanOr("AutomationEnabled", false);
+        input.readChild("Upgrades", upgradeHandler);
+        input.readChild("Inventory", itemHandler);
     }
 
     @Override
-    protected void addAdditionalSaveData(@Nonnull CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        addMotorboatSaveData(compound);
+    protected void addAdditionalSaveData(@Nonnull ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        addMotorboatSaveData(output);
     }
 
-    public void addMotorboatSaveData(CompoundTag compound) {
-        compound.putInt("EnergyStorage", getEnergyStored());
-        compound.put("MotorboatSchedule", MotorboatSchedule.CODEC.encodeStart(NbtOps.INSTANCE, getMotorboatSchedule()).getOrThrow());
-        compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
-        compound.putInt("DockTime", dockTime);
-        compound.putBoolean("AutomationEnabled", automationEnabled);
-        compound.put("Upgrades", upgradeHandler.serializeNBT(registryAccess()));
-        compound.put("Inventory", itemHandler.serializeNBT(registryAccess()));
-        compound.putInt("FishingCounter", fishingCounter);
+    public void addMotorboatSaveData(ValueOutput output) {
+        output.putInt("EnergyStorage", getEntityData().get(ENERGY));
+        output.store("MotorboatSchedule", MotorboatSchedule.CODEC, getEntityData().get(MOTORBOAT_SCHEDULE));
+        output.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
+        output.putInt("DockTime", dockTime);
+        output.putBoolean("AutomationEnabled", automationEnabled);
+        output.putChild("Upgrades", upgradeHandler);
+        output.putChild("Inventory", itemHandler);
     }
 
     public MotorboatSchedule getMotorboatSchedule() {
@@ -225,12 +227,6 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     public boolean lavaUpgradeActive() {
         return getEntityData().get(LAVA_UPGRADE_ACTIVE);
-    }
-
-    @Nonnull
-    @Override
-    public Item getDropItem() {
-        return CargoBoats.MOTORBOAT_ITEM.asItem();
     }
 
     @Nullable
@@ -244,9 +240,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     @Override
-    public void destroy(@Nonnull Item dropItem) {
-        super.destroy(dropItem);
-        if (level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+    public void destroy(@Nonnull ServerLevel level, @Nonnull Item dropItem) {
+        super.destroy(level, dropItem);
+        if (level.getGameRules().get(GameRules.ENTITY_DROPS)) {
             dropContents();
         }
     }
@@ -257,7 +253,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     public void remove(@Nonnull RemovalReason reason) {
-        if (!this.level().isClientSide && reason == RemovalReason.KILLED) {
+        if (!this.level().isClientSide() && reason == RemovalReason.KILLED) {
             dropContents();
         }
 
@@ -271,8 +267,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     private void dropContents() {
-        for (int i = 0; i < combinedHandler.getSlots(); ++i) {
-            Containers.dropItemStack(level(), getX(), getY(), getZ(), combinedHandler.getStackInSlot(i));
+        for (int i = 0; i < combinedHandler.size(); ++i) {
+            Containers.dropItemStack(level(), getX(), getY(), getZ(),
+                    combinedHandler.getResource(i).toStack(combinedHandler.getAmountAsInt(i)));
         }
     }
 
@@ -295,9 +292,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             var newChunkSet = new LongOpenHashSet();
             for (int i=-1; i<=1; ++i) {
                 for (int j=-1; j<=1; ++j) {
-                    var chunkPos = new ChunkPos(chunkPosition().x + i, chunkPosition().z + j);
-                    newChunkSet.add(chunkPos.toLong());
-                    CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, chunkPos.x, chunkPos.z, true, false);
+                    var chunkPos = new ChunkPos(chunkPosition().x() + i, chunkPosition().z() + j);
+                    newChunkSet.add(chunkPos.pack());
+                    CargoBoats.TICKET_CONTROLLER.forceChunk(level, this, chunkPos.x(), chunkPos.z(), true, false);
                 }
             }
             if (chunkSet.removeAll(newChunkSet)) {
@@ -312,7 +309,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     }
 
     private void adjustCapacity() {
-        itemHandler.setSize(baseInvSize * itemCapacityMultiplier());
+        itemHandler.resize(baseInvSize * itemCapacityMultiplier());
     }
 
     public int itemCapacityMultiplier() {
@@ -363,28 +360,32 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     private void runFishing() {
         var upgrade = Util.findItem(upgradeHandler, CargoBoats.FISHING_UPGRADE.get());
         int energyConsumption = Config.FISHING_ENERGY_CONSUMPTION.getAsInt();
-        if ((status == Status.IN_WATER || status == Status.UNDER_WATER)
-                && !upgrade.isEmpty()
-                && level() instanceof ServerLevel serverLevel
-                && serverLevel.getFluidState(positionForPathfinding()).is(FluidTags.WATER)
-                && extractEnergy(energyConsumption, true) >= energyConsumption
-        ) {
-            extractEnergy(energyConsumption, false);
-            double effectiveFishingInterval = Config.BASE_FISHING_TIME.getAsDouble() - EnchantmentHelper.getFishingTimeReduction(serverLevel, upgrade, this);
-            double probability = Config.FISHING_PROBABILITY_FACTOR.getAsDouble() / Math.max(effectiveFishingInterval, Config.FISHING_PROBABILITY_FACTOR.getAsDouble());
-            var chunkPos = chunkPosition();
-            var chunk = serverLevel.getChunk(chunkPos.x, chunkPos.z);
-            double overfishingProportion = Util.calcAndIncreaseOverfishingProportion(chunk);
-            probability *= Math.pow(Config.OVERFISHING_EXPONENTIAL_BASE.getAsDouble(), overfishingProportion);
-            if (random.nextDouble() < probability) {
-                var lootparams = new LootParams.Builder(serverLevel)
-                        .withParameter(LootContextParams.ORIGIN, this.position())
-                        .withParameter(LootContextParams.TOOL, upgrade)
-                        .withParameter(LootContextParams.THIS_ENTITY, this)
-                        .withLuck(EnchantmentHelper.getFishingLuckBonus(serverLevel, upgrade, this))
-                        .create(LootContextParamSets.FISHING);
-                LootTable loottable = serverLevel.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
-                loottable.getRandomItems(lootparams, stack -> ItemHandlerHelper.insertItemStacked(itemHandler, stack, false));
+        try (var txn = Transaction.openRoot()) {
+            if ((status == Status.IN_WATER || status == Status.UNDER_WATER)
+                    && !upgrade.isEmpty()
+                    && level() instanceof ServerLevel serverLevel
+                    && serverLevel.getFluidState(positionForPathfinding()).is(FluidTags.WATER)
+                    && extract(energyConsumption, txn) >= energyConsumption
+            ) {
+                double effectiveFishingInterval = Config.BASE_FISHING_TIME.getAsDouble() - EnchantmentHelper.getFishingTimeReduction(serverLevel, upgrade, this);
+                double probability = Config.FISHING_PROBABILITY_FACTOR.getAsDouble() / Math.max(effectiveFishingInterval, Config.FISHING_PROBABILITY_FACTOR.getAsDouble());
+                var chunkPos = chunkPosition();
+                var chunk = serverLevel.getChunk(chunkPos.x(), chunkPos.z());
+                double overfishingProportion = Util.calcAndIncreaseOverfishingProportion(chunk);
+                probability *= Math.pow(Config.OVERFISHING_EXPONENTIAL_BASE.getAsDouble(), overfishingProportion);
+                if (random.nextDouble() < probability) {
+                    var lootparams = new LootParams.Builder(serverLevel)
+                            .withParameter(LootContextParams.ORIGIN, this.position())
+                            .withParameter(LootContextParams.TOOL, upgrade)
+                            .withParameter(LootContextParams.THIS_ENTITY, this)
+                            .withLuck(EnchantmentHelper.getFishingLuckBonus(serverLevel, upgrade, this))
+                            .create(LootContextParamSets.FISHING);
+                    LootTable loottable = serverLevel.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
+                    loottable.getRandomItems(lootparams, stack -> {
+                        itemHandler.insert(ItemResource.of(stack), stack.getCount(), txn);
+                    });
+                }
+                txn.commit();
             }
         }
     }
@@ -415,10 +416,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         runFishing();
         runIcebreaker();
 
-        if (!level().isClientSide && !isControlledByLocalInstance()) {
+        if (!level().isClientSide() && !isLocalInstanceAuthoritative()) {
             getEntityData().set(CLIENT_MOTORBOAT_SPEED, (float)relativeMotorboatSpeed());
         }
-        if (!level().isClientSide) {
+        if (!level().isClientSide()) {
             getEntityData().set(LAVA_UPGRADE_ACTIVE, Util.countItem(upgradeHandler, CargoBoats.LAVA_UPGRADE.get()) > 0);
         }
 
@@ -429,11 +430,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
         final int nextStopIdx = getEntityData().get(NEXT_STOP_INDEX);
 
-        if (!rotorAnimationState.isStarted()) {
-            rotorAnimationState.start(tickCount);
-        }
-
-        if (!level().isClientSide && automationEnabled && this.isControlledByLocalInstance()) {
+        if (!level().isClientSide() && automationEnabled && this.isLocalInstanceAuthoritative()) {
             if (!motorboatSchedule.entries().isEmpty()
                     && nextStop().get().dimension() == level().dimension()) {
                 var pos = motorboatSchedule.entries().get(nextStopIdx).dock();
@@ -471,7 +468,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             ++this.outOfControlTicks;
         }
 
-        if (!this.level().isClientSide && this.outOfControlTicks >= 60.0F) {
+        if (!this.level().isClientSide() && this.outOfControlTicks >= 60.0F) {
             this.ejectPassengers();
         }
 
@@ -484,33 +481,35 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         }
 
         this.baseTick();
-        this.tickLerp();
-        if (this.isControlledByLocalInstance()) {
+        this.getInterpolation().interpolate();
+        if (this.isLocalInstanceAuthoritative()) {
             if (!(this.getFirstPassenger() instanceof Player)) {
                 this.setPaddleState(false, false);
             }
 
             this.floatBoat();
-            if (this.level().isClientSide) {
+            if (this.level().isClientSide()) {
                 this.controlManualMotorboat();
             }
 
-            if (!level().isClientSide && automationEnabled) {
+            if (!level().isClientSide() && automationEnabled) {
                 targetLocation().ifPresent(vec -> {
                     var deltaVector = vec.subtract(position());
                     int energyConsumption = energyConsumption();
-                    if (deltaVector.horizontalDistance() < 0.1) {
-                        path.removeLast();
-                    } else if (extractEnergy(energyConsumption, true) >= energyConsumption) {
-                        extractEnergy(energyConsumption, false);
-                        motorActive.setTrue();
-                        var scalar = Math.min(
-                                motorboatSpeed() / deltaVector.horizontalDistance(),
-                                0.2);
-                        deltaVector = new Vec3(deltaVector.x * scalar, 0, deltaVector.z * scalar);
-                        setYRot((float) (Math.toDegrees(Math.atan2(deltaVector.z, deltaVector.x)) - 90));
-                        this.setDeltaMovement(deltaVector);
-                        expectedSpeed2.setValue(deltaVector.horizontalDistanceSqr());
+                    try (var txn = Transaction.openRoot()) {
+                        if (deltaVector.horizontalDistance() < 0.1) {
+                            path.removeLast();
+                        } else if (extract(energyConsumption, txn) >= energyConsumption) {
+                            txn.commit();
+                            motorActive.setTrue();
+                            var scalar = Math.min(
+                                    motorboatSpeed() / deltaVector.horizontalDistance(),
+                                    0.2);
+                            deltaVector = new Vec3(deltaVector.x * scalar, 0, deltaVector.z * scalar);
+                            setYRot((float) (Math.toDegrees(Math.atan2(deltaVector.z, deltaVector.x)) - 90));
+                            this.setDeltaMovement(deltaVector);
+                            expectedSpeed2.setValue(deltaVector.horizontalDistanceSqr());
+                        }
                     }
                 });
             }
@@ -520,12 +519,12 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             this.setDeltaMovement(Vec3.ZERO);
         }
 
+        this.applyEffectsFromBlocks();
         this.tickBubbleColumn();
 
-        this.checkInsideBlocks();
         List<Entity> list = this.level().getEntities(this, this.getBoundingBox().inflate(0.2, -0.01, 0.2), EntitySelector.pushableBy(this));
         if (!list.isEmpty()) {
-            boolean flag = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
+            boolean flag = !this.level().isClientSide() && !(this.getControllingPassenger() instanceof Player);
 
             for(Entity entity : list) {
                 if (!entity.hasPassenger(this)) {
@@ -538,10 +537,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
             }
         }
 
-        if (!level().isClientSide) {
+        if (!level().isClientSide()) {
             getEntityData().set(MOTOR_ACTIVE, motorActive.booleanValue());
 
-            if (automationEnabled && isControlledByLocalInstance()) {
+            if (automationEnabled && isLocalInstanceAuthoritative()) {
                 if (path.isEmpty() || position().distanceToSqr(xo, yo, zo) < 0.2 * 0.2 * expectedSpeed2.getValue()) {
                     ++stuckTime;
                 } else {
@@ -573,19 +572,21 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Nonnull
     @Override
-    public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand) {
+    public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull Vec3 location) {
         var stack = player.getItemInHand(hand);
 
         if (stack.is(WrenchHook.WRENCH_TAG) && player.isSecondaryUseActive()) {
             var wrenchDrop = getWrenchDrop();
-            var invWrapper = new PlayerMainInvWrapper(player.getInventory());
+            var invWrapper = PlayerInventoryWrapper.of(player.getInventory());
 
-            if (ItemHandlerHelper.insertItem(invWrapper, wrenchDrop, true).isEmpty()) {
-                ItemHandlerHelper.insertItem(invWrapper, wrenchDrop, false);
-                discard();
-                return InteractionResult.SUCCESS;
-            } else {
-                return InteractionResult.FAIL;
+            try (var txn = Transaction.openRoot()) {
+                if (invWrapper.insert(ItemResource.of(wrenchDrop), wrenchDrop.count(), txn) >= wrenchDrop.count()) {
+                    txn.commit();
+                    discard();
+                    return InteractionResult.SUCCESS;
+                } else {
+                    return InteractionResult.FAIL;
+                }
             }
         }
 
@@ -595,22 +596,22 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
             resetDockingData(true);
 
-            if (level().isClientSide) {
-                player.displayClientMessage(Component.translatable("message.cargoboats.motorboat_programmed"), false);
+            if (level().isClientSide()) {
+                player.sendSystemMessage(Component.translatable("message.cargoboats.motorboat_programmed"));
             }
             return InteractionResult.SUCCESS;
         }
 
         if (stack.is(CargoBoats.MOTORBOAT_TRACKER)) {
             stack.set(CargoBoats.TRACKED_MOTORBOAT, uuid);
-            if (level().isClientSide) {
-                player.displayClientMessage(Component.translatable("message.cargoboats.motorboat_tracked", uuid.toString()), false);
+            if (level().isClientSide()) {
+                player.sendSystemMessage(Component.translatable("message.cargoboats.motorboat_tracked", uuid.toString()));
             }
             return InteractionResult.SUCCESS;
         }
 
         if (!player.isSecondaryUseActive()) {
-            InteractionResult interactionresult = super.interact(player, hand);
+            InteractionResult interactionresult = super.interact(player, hand, location);
             if (interactionresult != InteractionResult.PASS) {
                 return interactionresult;
             }
@@ -631,9 +632,55 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public void openCustomInventoryScreen(Player player) {
         var openMenuResult = player.openMenu(this);
-        if (openMenuResult.isPresent() && !level().isClientSide) {
+        if (openMenuResult.isPresent() && !level().isClientSide()) {
             this.gameEvent(GameEvent.CONTAINER_OPEN, player);
         }
+    }
+
+    private final SnapshotJournal<Integer> energyJournal = new SnapshotJournal<>() {
+        @Override
+        protected Integer createSnapshot() {
+            return getEntityData().get(ENERGY);
+        }
+
+        @Override
+        protected void revertToSnapshot(Integer snapshot) {
+            getEntityData().set(ENERGY, snapshot);
+        }
+    };
+
+    @Override
+    public long getAmountAsLong() {
+        return getEntityData().get(ENERGY);
+    }
+
+    @Override
+    public long getCapacityAsLong() {
+        return Config.MOTORBOAT_BASE_ENERGY_CAPACITY.getAsInt();
+    }
+
+    @Override
+    public int insert(int amount, @Nonnull TransactionContext transaction) {
+        int energy = getEntityData().get(ENERGY);
+        int inserted = Math.min(getCapacityAsInt() - energy, amount);
+        if (inserted > 0) {
+            energyJournal.updateSnapshots(transaction);
+            getEntityData().set(ENERGY, energy + inserted);
+            return inserted;
+        }
+        return 0;
+    }
+
+    @Override
+    public int extract(int amount, @Nonnull TransactionContext transaction) {
+        int energy = getEntityData().get(ENERGY);
+        int extracted = Math.min(energy, amount);
+        if (extracted > 0) {
+            energyJournal.updateSnapshots(transaction);
+            getEntityData().set(ENERGY, energy - extracted);
+            return extracted;
+        }
+        return 0;
     }
 
     private class PlayMotorboatSound {
@@ -646,49 +693,9 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     @Override
     public void onAddedToLevel() {
-        if (level().isClientSide) {
+        if (level().isClientSide()) {
             new PlayMotorboatSound().run();
         }
-    }
-
-    @Override
-    public int receiveEnergy(int i, boolean simulate) {
-        int energy = getEnergyStored();
-        int toReceive = Math.clamp(i, 0, getMaxEnergyStored() - energy);
-        if (!simulate) {
-            getEntityData().set(ENERGY, energy + toReceive);
-        }
-        return toReceive;
-    }
-
-    @Override
-    public int extractEnergy(int i, boolean simulate) {
-        int energy = getEnergyStored();
-        int toExtract = Math.clamp(i, 0, energy);
-        if (!simulate) {
-            getEntityData().set(ENERGY, energy - toExtract);
-        }
-        return toExtract;
-    }
-
-    @Override
-    public int getEnergyStored() {
-        return getEntityData().get(ENERGY);
-    }
-
-    @Override
-    public int getMaxEnergyStored() {
-        return Config.MOTORBOAT_BASE_ENERGY_CAPACITY.getAsInt();
-    }
-
-    @Override
-    public boolean canExtract() {
-        return true;
-    }
-
-    @Override
-    public boolean canReceive() {
-        return true;
     }
 
     @Override

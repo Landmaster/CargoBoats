@@ -1,45 +1,47 @@
 package com.landmaster.cargoboats.menu;
 
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import net.neoforged.neoforge.transfer.IndexModifier;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.world.inventory.StackCopySlot;
 
 import javax.annotation.Nonnull;
 import java.util.function.IntSupplier;
 
-public class DynamicIndexSlot extends Slot {
-    private static final Container emptyInventory = new SimpleContainer(0);
-    private final IItemHandler itemHandler;
+public class DynamicIndexSlot extends StackCopySlot {
+    private final ResourceHandler<ItemResource> itemHandler;
     protected final IntSupplier indexSupplier;
+    protected final IndexModifier<ItemResource> modifier;
 
-    public DynamicIndexSlot(IItemHandler itemHandler, IntSupplier indexSupplier, int xPosition, int yPosition) {
-        super(emptyInventory, indexSupplier.getAsInt(), xPosition, yPosition);
+    public DynamicIndexSlot(ResourceHandler<ItemResource> itemHandler, IndexModifier<ItemResource> modifier, IntSupplier indexSupplier, int xPosition, int yPosition) {
+        super(indexSupplier.getAsInt(), xPosition, yPosition);
         this.itemHandler = itemHandler;
         this.indexSupplier = indexSupplier;
+        this.modifier = modifier;
     }
 
     @Override
     public boolean mayPlace(ItemStack stack) {
         if (stack.isEmpty())
             return false;
-        return itemHandler.isItemValid(indexSupplier.getAsInt(), stack);
+        return itemHandler.isValid(indexSupplier.getAsInt(), ItemResource.of(stack));
     }
 
     @Nonnull
     @Override
-    public ItemStack getItem() {
-        return this.getItemHandler().getStackInSlot(indexSupplier.getAsInt());
+    public ItemStack getStackCopy() {
+        int index = indexSupplier.getAsInt();
+        return itemHandler.getResource(index).toStack(itemHandler.getAmountAsInt(index));
     }
 
     // Override if your IItemHandler does not implement IItemHandlerModifiable
     @Override
-    public void set(@Nonnull ItemStack stack) {
-        ((IItemHandlerModifiable) this.getItemHandler()).setStackInSlot(indexSupplier.getAsInt(), stack);
-        this.setChanged();
+    public void setStackCopy(@Nonnull ItemStack stack) {
+        modifier.set(indexSupplier.getAsInt(), ItemResource.of(stack), stack.getCount());
     }
 
     @Override
@@ -47,26 +49,29 @@ public class DynamicIndexSlot extends Slot {
 
     @Override
     public int getMaxStackSize() {
-        return this.itemHandler.getSlotLimit(indexSupplier.getAsInt());
+        return this.itemHandler.getCapacityAsInt(indexSupplier.getAsInt(), ItemResource.EMPTY);
     }
 
     @Override
-    public int getMaxStackSize(ItemStack stack) {
-        return Math.min(stack.getMaxStackSize(), this.itemHandler.getSlotLimit(indexSupplier.getAsInt()));
+    public int getMaxStackSize(@Nonnull ItemStack stack) {
+        return this.itemHandler.getCapacityAsInt(indexSupplier.getAsInt(), ItemResource.of(stack));
     }
 
     @Override
     public boolean mayPickup(@Nonnull Player playerIn) {
-        return !this.getItemHandler().extractItem(indexSupplier.getAsInt(), 1, true).isEmpty();
+        int index = indexSupplier.getAsInt();
+        var resource = itemHandler.getResource(index);
+        if (resource.isEmpty()) {
+            return false;
+        }
+        try (var tx = Transaction.openRoot()) {
+            // Simulated extraction
+            return itemHandler.extract(index, resource, 1, tx) == 1;
+        }
     }
 
-    @Nonnull
     @Override
-    public ItemStack remove(int amount) {
-        return this.getItemHandler().extractItem(indexSupplier.getAsInt(), amount, false);
-    }
-
-    public IItemHandler getItemHandler() {
-        return itemHandler;
+    public boolean isSameInventory(@Nonnull Slot other) {
+        return other instanceof DynamicIndexSlot otherIndexSlot && itemHandler == otherIndexSlot.itemHandler;
     }
 }

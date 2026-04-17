@@ -4,20 +4,20 @@ import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.util.ClientUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 import javax.annotation.Nonnull;
 
 public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboatMenu> {
-    private static final ResourceLocation CONTAINER_BACKGROUND = ResourceLocation.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/fluid_motorboat.png");
+    private static final Identifier CONTAINER_BACKGROUND = Identifier.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/container/fluid_motorboat.png");
 
     public FluidMotorboatScreen(FluidMotorboatMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        imageHeight = 222;
+        super(menu, playerInventory, title, 176, 222);
         inventoryLabelY = imageHeight - 161;
     }
 
@@ -29,45 +29,41 @@ public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboat
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    protected void extractTooltip(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.extractTooltip(graphics, mouseX, mouseY);
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
+            graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), mouseX, mouseY);
+        }
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof FluidMotorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
                 var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
                 var x = leftPos + 8;
                 var y = topPos + 34;
-                guiGraphics.drawString(font, componentToDraw, x, y, 0xFF000000, false);
+                graphics.text(font, componentToDraw, x, y, 0xFF000000, false);
                 var width = font.width(componentToDraw);
                 if (mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + font.lineHeight) {
-                    guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.next_stop",
-                                    entry.dock().toShortString(), entry.dimension().location().toString()),
+                    graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.next_stop",
+                                    entry.dock().toShortString(), entry.dimension().identifier().toString()),
                             mouseX, mouseY);
                 }
             });
-            ClientUtil.drawEnergyBarTooltip(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
-            ClientUtil.drawFluidBarTooltip(motorboat.tank.getFluid(), motorboat.tank.getCapacity(), guiGraphics, leftPos + 8, topPos + 47, mouseX, mouseY, font);
+            ClientUtil.drawEnergyBarTooltip(motorboat.getAmountAsInt(), motorboat.getCapacityAsInt(), graphics, leftPos + 8, topPos + 16, mouseX, mouseY, font);
+            ClientUtil.drawFluidBarTooltip(
+                    motorboat.tank.getResource(0).toStack(motorboat.tank.getAmountAsInt(0)),
+                    motorboat.tank.getCapacityAsInt(0, motorboat.tank.getResource(0)), graphics, leftPos + 8, topPos + 47, mouseX, mouseY, font);
         }
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // main background
-        guiGraphics.blit(CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
-
+    public void extractBackground(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(graphics, mouseX, mouseY, a);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_BACKGROUND, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof FluidMotorboat motorboat) {
-            ClientUtil.drawEnergyBar(motorboat.getEnergyStored(), motorboat.getMaxEnergyStored(), guiGraphics, leftPos + 8, topPos + 16);
-            ClientUtil.drawFluidBar(motorboat.tank.getFluid(), motorboat.tank.getCapacity(), guiGraphics, leftPos + 8, topPos + 47);
-        }
-    }
-
-    @Override
-    protected void renderTooltip(@Nonnull GuiGraphics guiGraphics, int x, int y) {
-        super.renderTooltip(guiGraphics, x, y);
-        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
-            guiGraphics.renderTooltip(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), x, y);
+            ClientUtil.drawEnergyBar(motorboat.getAmountAsInt(), motorboat.getCapacityAsInt(), graphics, leftPos + 8, topPos + 16);
+            ClientUtil.drawFluidBar(motorboat.tank.getResource(0).toStack(motorboat.tank.getAmountAsInt(0)),
+                    motorboat.tank.getCapacityAsInt(0, motorboat.tank.getResource(0)), graphics, leftPos + 8, topPos + 47);
         }
     }
 }
