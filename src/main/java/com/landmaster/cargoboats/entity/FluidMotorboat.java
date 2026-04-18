@@ -29,17 +29,17 @@ public class FluidMotorboat extends Motorboat {
             @Override
             protected void onContentsChanged(int index, @Nonnull FluidStack previousContents) {
                 super.onContentsChanged(index, previousContents);
-                PacketDistributor.sendToPlayersTrackingEntity(
-                        FluidMotorboat.this, new SyncFluidMotorboatPacket(getId(), tank.getResource(0).toStack(tank.getAmountAsInt(0)),
-                                tank.getCapacityAsInt(0, tank.getResource(0))));
+                if (!FluidMotorboat.this.level().isClientSide()) {
+                    PacketDistributor.sendToPlayersTrackingEntity(FluidMotorboat.this, syncPacket());
+                }
             }
 
             @Override
             public void onCapacityChanged(int previousCapacity) {
                 super.onCapacityChanged(previousCapacity);
-                PacketDistributor.sendToPlayersTrackingEntity(
-                        FluidMotorboat.this, new SyncFluidMotorboatPacket(getId(), tank.getResource(0).toStack(tank.getAmountAsInt(0)),
-                                tank.getCapacityAsInt(0, tank.getResource(0))));
+                if (!FluidMotorboat.this.level().isClientSide()) {
+                    PacketDistributor.sendToPlayersTrackingEntity(FluidMotorboat.this, syncPacket());
+                }
             }
         };
     }
@@ -89,7 +89,11 @@ public class FluidMotorboat extends Motorboat {
 
     @Override
     public void startSeenByPlayer(@Nonnull ServerPlayer serverPlayer) {
-        PacketDistributor.sendToPlayer(serverPlayer, new SyncFluidMotorboatPacket(getId(), tank.getResource(0).toStack(tank.getAmountAsInt(0)),
-                tank.getCapacityAsInt(0, tank.getResource(0))));
+        PacketDistributor.sendToPlayer(serverPlayer, syncPacket());
+    }
+
+    protected SyncFluidMotorboatPacket syncPacket() {
+        return new SyncFluidMotorboatPacket(getId(), tank.getResource(0).toStack(tank.getAmountAsInt(0)),
+                tank.getCapacityAsInt(0, tank.getResource(0)));
     }
 }
