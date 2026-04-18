@@ -88,9 +88,9 @@ public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<Adjusta
         graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
         if (menu.detector != null) {
             graphics.text(font,
-                    Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), 8, topPos + 22, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), 8, 22, 0xff000000, false);
             graphics.text(font,
-                    Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), 8, topPos + 52, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), 8, 52, 0xff000000, false);
             var text = Integer.toString(menu.detector.minX);
             graphics.text(font, text, 28 - font.width(text)/2, 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxX);
