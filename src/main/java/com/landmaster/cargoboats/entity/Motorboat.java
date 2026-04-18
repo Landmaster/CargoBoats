@@ -192,10 +192,10 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
     @Override
     protected void readAdditionalSaveData(@Nonnull ValueInput input) {
         super.readAdditionalSaveData(input);
-        readMotorboatSaveData(input);
+        readMotorboatSaveData(input, false);
     }
 
-    public void readMotorboatSaveData(ValueInput input) {
+    public void readMotorboatSaveData(ValueInput input, boolean forceSync) {
         getEntityData().set(ENERGY, input.getIntOr("EnergyStorage", 0));
         getEntityData().set(MOTORBOAT_SCHEDULE, input.read("MotorboatSchedule", MotorboatSchedule.CODEC).get());
         getEntityData().set(NEXT_STOP_INDEX, input.getIntOr("NextStop", 0));

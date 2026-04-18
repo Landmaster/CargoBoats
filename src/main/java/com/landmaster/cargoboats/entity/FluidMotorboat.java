@@ -59,9 +59,12 @@ public class FluidMotorboat extends Motorboat {
     }
 
     @Override
-    public void readMotorboatSaveData(ValueInput input) {
-        super.readMotorboatSaveData(input);
+    public void readMotorboatSaveData(ValueInput input, boolean forceSync) {
+        super.readMotorboatSaveData(input, forceSync);
         input.readChild("FluidTank", tank);
+        if (forceSync) {
+            PacketDistributor.sendToPlayersTrackingEntity(FluidMotorboat.this, syncPacket());
+        }
     }
 
     @Nullable

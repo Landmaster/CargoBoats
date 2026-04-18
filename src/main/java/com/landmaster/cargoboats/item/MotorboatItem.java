@@ -2,6 +2,7 @@ package com.landmaster.cargoboats.item;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.Config;
+import com.landmaster.cargoboats.entity.FluidMotorboat;
 import com.landmaster.cargoboats.entity.Motorboat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -82,7 +84,7 @@ public class MotorboatItem extends Item {
                         var tag = itemstack.get(CargoBoats.MOTORBOAT_SAVE_DATA);
                         if (tag != null) {
                             var input = TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag);
-                            boat.readMotorboatSaveData(input);
+                            boat.readMotorboatSaveData(input, true);
                         }
                         level.gameEvent(player, GameEvent.ENTITY_PLACE, hitresult.getLocation());
                         itemstack.consume(1, player);
