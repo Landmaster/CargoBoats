@@ -42,6 +42,7 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat, MotorboatRender
         super.extractRenderState(entity, state, partialTicks);
         state.isUnderWater = entity.isUnderWater();
         state.yRotation = entity.getYRot(partialTicks);
+        state.rotorRotation += partialTicks * entity.rotorSpeed * 10;
     }
 
     @Override

@@ -2,14 +2,10 @@ package com.landmaster.cargoboats.entity.render;
 
 import com.landmaster.cargoboats.CargoBoats;
 import com.landmaster.cargoboats.entity.FluidMotorboat;
-import com.landmaster.cargoboats.entity.Motorboat;
-import com.landmaster.cargoboats.util.FluidRenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -44,6 +40,7 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat, Motor
         super.extractRenderState(entity, state, partialTicks);
         state.isUnderWater = entity.isUnderWater();
         state.yRotation = entity.getYRot(partialTicks);
+        state.rotorRotation += partialTicks * entity.rotorSpeed * 10;
     }
 
     @Override

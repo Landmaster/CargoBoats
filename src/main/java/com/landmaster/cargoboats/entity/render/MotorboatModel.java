@@ -5,13 +5,14 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 
+import javax.annotation.Nonnull;
+
 public class MotorboatModel extends EntityModel<MotorboatRenderState> {
-    private final ModelPart main;
     private final ModelPart rotor;
 
     public MotorboatModel(ModelPart root) {
         super(root);
-        this.main = root.getChild("boat");
+        var main = root.getChild("boat");
         this.rotor = main.getChild("propeller");
     }
 
@@ -39,15 +40,14 @@ public class MotorboatModel extends EntityModel<MotorboatRenderState> {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-
         PartDefinition waterPatch = partdefinition.addOrReplaceChild("waterPatch", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -6.0F, -8.0F, 8.0F, 6.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
         return LayerDefinition.create(meshdefinition, 0, 0);
     }
 
     @Override
-    public void setupAnim(MotorboatRenderState state) {
+    public void setupAnim(@Nonnull MotorboatRenderState state) {
         super.setupAnim(state);
-        state.rotorRotation = 0;
+        rotor.zRot = state.rotorRotation;
     }
 
 //    @Override
