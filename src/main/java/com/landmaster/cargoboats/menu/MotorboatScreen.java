@@ -57,14 +57,14 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
                 font,
                 Component.translatable(writePageLimit < readPageLimit ? "gui.cargoboats.page.asterisk" : "gui.cargoboats.page",
                         menu.page+1, readPageLimit).withStyle(pageStyle),
-                leftPos + 24, topPos + 51, 0xFF000000, false);
+                24, 51, 0xFF000000, false);
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
         if (entity instanceof Motorboat motorboat) {
             motorboat.nextStop().ifPresent(entry -> {
                 var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
                 var x = leftPos + 8;
                 var y = topPos + 34;
-                graphics.text(font, componentToDraw, x, y, 0xFF000000, false);
+                graphics.text(font, componentToDraw, x - leftPos, y - topPos, 0xFF000000, false);
                 var width = font.width(componentToDraw);
                 if (xm >= x && ym >= y && xm < x + width && ym < y + font.lineHeight) {
                     graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.next_stop",
@@ -90,7 +90,7 @@ public class MotorboatScreen extends AbstractContainerScreen<MotorboatMenu> {
     @Override
     protected void extractTooltip(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
-        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot instanceof MotorboatUpgradeSlot && !this.hoveredSlot.hasItem()) {
             graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), mouseX, mouseY);
         }
     }

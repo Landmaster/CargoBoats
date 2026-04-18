@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "y": {
-      "item": "minecraft:yellow_dye"
-    },
-    "c": {
-      "tag": "c:ingots/copper"
-    },
-    "p": {
-      "item": "minecraft:compass"
-    }
+    "c": "#c:ingots/copper",
+    "p": "minecraft:compass",
+    "y": "minecraft:yellow_dye"
   },
   "pattern": [
     " c ",
@@ -18,7 +12,6 @@
     " c "
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:motorboat_tracker"
   }
 }

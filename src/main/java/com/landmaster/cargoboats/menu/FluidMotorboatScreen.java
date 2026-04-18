@@ -31,7 +31,7 @@ public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboat
     @Override
     protected void extractTooltip(@Nonnull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
-        if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && !this.hoveredSlot.hasItem()) {
+        if (this.menu.getCarried().isEmpty() && this.hoveredSlot instanceof MotorboatUpgradeSlot && !this.hoveredSlot.hasItem()) {
             graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.upgrade_slot"), mouseX, mouseY);
         }
         var entity = Minecraft.getInstance().level.getEntity(menu.dataSlots.get(0).get());
@@ -40,7 +40,7 @@ public class FluidMotorboatScreen extends AbstractContainerScreen<FluidMotorboat
                 var componentToDraw = Component.translatable("gui.cargoboats.next_stop", motorboat.nextStopIndex());
                 var x = leftPos + 8;
                 var y = topPos + 34;
-                graphics.text(font, componentToDraw, x, y, 0xFF000000, false);
+                graphics.text(font, componentToDraw, x - leftPos, y - topPos, 0xFF000000, false);
                 var width = font.width(componentToDraw);
                 if (mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + font.lineHeight) {
                     graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.next_stop",

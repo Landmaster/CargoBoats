@@ -104,21 +104,20 @@ public class MotorboatProgrammerScreen extends AbstractContainerScreen<Motorboat
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
         var schedule = menu.getSchedule();
 
-        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+        graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
 
         var pageComponent = Component.translatable("gui.cargoboats.page", page+1, 1+(schedule.entries().size() - 1) / PAGE_SIZE);
-        graphics.text(font, pageComponent, leftPos + (imageWidth - font.width(pageComponent)) / 2,
-                topPos + 22, 0xff000000, false);
+        graphics.text(font, pageComponent, (imageWidth - font.width(pageComponent)) / 2, 22, 0xff000000, false);
 
         for (int i=page * PAGE_SIZE; i<schedule.entries().size() && i < (page+1) * PAGE_SIZE; ++i) {
             var entry = schedule.entries().get(i);
             int x = leftPos + 36;
             int y = topPos + 34 + (i % PAGE_SIZE)*12;
             var component = Component.literal(Integer.toString(entry.stopTime()));
-            graphics.text(font, component, x - font.width(component) / 2, y, 0xff000000, false);
+            graphics.text(font, component, x - font.width(component) / 2 - leftPos, y - topPos, 0xff000000, false);
             x = leftPos + 66;
             component = Component.translatable("gui.cargoboats.motorboat_schedule", i, entry.dock().toShortString());
-            graphics.text(font, component, x, y, 0xff000000, false);
+            graphics.text(font, component, x - leftPos, y - topPos, 0xff000000, false);
             if (xm >= x && ym >= y && xm < x+font.width(component) && ym < y+font.lineHeight) {
                 graphics.setTooltipForNextFrame(font, Component.translatable("tooltip.cargoboats.motorboat_schedule",
                         entry.dock().toShortString(), entry.dimension().identifier().toString(), entry.stopTime()), xm, ym);

@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "e": {
-      "item": "minecraft:emerald"
-    },
-    "r": {
-      "tag": "c:dusts/redstone"
-    },
-    "p": {
-      "item": "minecraft:paper"
-    }
+    "e": "#c:gems/emerald",
+    "p": "minecraft:paper",
+    "r": "#c:dusts/redstone"
   },
   "pattern": [
     " e ",
@@ -18,7 +12,6 @@
     " r "
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:motorboat_programmer"
   }
 }

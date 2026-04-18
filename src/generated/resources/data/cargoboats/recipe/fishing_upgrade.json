@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "s": {
-      "item": "minecraft:prismarine_shard"
-    },
-    "p": {
-      "tag": "c:gems/prismarine"
-    },
-    "f": {
-      "item": "minecraft:fishing_rod"
-    }
+    "f": "minecraft:fishing_rod",
+    "p": "#c:gems/prismarine",
+    "s": "minecraft:prismarine_shard"
   },
   "pattern": [
     "psp",
@@ -18,7 +12,6 @@
     "psp"
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:fishing_upgrade"
   }
 }

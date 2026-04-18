@@ -2,12 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "cargoboats:motorboat_programmer"
-    }
+    "cargoboats:motorboat_programmer"
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:motorboat_programmer"
   }
 }

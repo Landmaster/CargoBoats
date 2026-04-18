@@ -5,17 +5,13 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 
-import javax.annotation.Nonnull;
-
 public class MotorboatModel extends EntityModel<MotorboatRenderState> {
     private final ModelPart main;
-    private final ModelPart waterPatch;
     private final ModelPart rotor;
 
     public MotorboatModel(ModelPart root) {
         super(root);
         this.main = root.getChild("boat");
-        this.waterPatch = root.getChild("waterPatch");
         this.rotor = main.getChild("propeller");
     }
 
@@ -36,9 +32,16 @@ public class MotorboatModel extends EntityModel<MotorboatRenderState> {
 
         PartDefinition cube_r2 = propeller.addOrReplaceChild("cube_r2", CubeListBuilder.create().texOffs(11, 25).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 0.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, 0.0F, 1.0F, 0.0F, 0.0F, -0.7854F));
 
-        PartDefinition waterPatch = partdefinition.addOrReplaceChild("waterPatch", CubeListBuilder.create().texOffs(-13, -7).addBox(-4.0F, -6.0F, -8.0F, 8.0F, 6.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
-
         return LayerDefinition.create(meshdefinition, 64, 64);
+    }
+
+    public static LayerDefinition createWaterPatch() {
+        MeshDefinition meshdefinition = new MeshDefinition();
+        PartDefinition partdefinition = meshdefinition.getRoot();
+
+
+        PartDefinition waterPatch = partdefinition.addOrReplaceChild("waterPatch", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -6.0F, -8.0F, 8.0F, 6.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 24.0F, 0.0F));
+        return LayerDefinition.create(meshdefinition, 0, 0);
     }
 
     @Override
@@ -52,9 +55,4 @@ public class MotorboatModel extends EntityModel<MotorboatRenderState> {
 //        motorboat.rotorAnimationState.updateTime(ageInTicks, motorboat.rotorSpeed * 10);
 //        rotor.zRot = (float) Math.toRadians(motorboat.rotorAnimationState.getAccumulatedTime() % 360);
 //    }
-
-    @Nonnull
-    public ModelPart waterPatch() {
-        return waterPatch;
-    }
 }

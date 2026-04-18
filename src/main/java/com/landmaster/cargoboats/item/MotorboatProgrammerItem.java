@@ -16,7 +16,6 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

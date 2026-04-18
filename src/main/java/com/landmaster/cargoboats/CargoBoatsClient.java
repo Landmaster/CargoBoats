@@ -36,6 +36,7 @@ public class CargoBoatsClient {
     private static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(MotorboatRenderer.LAYER_LOCATION, MotorboatModel::createBodyLayer);
         event.registerLayerDefinition(FluidMotorboatRenderer.LAYER_LOCATION, FluidMotorboatModel::createBodyLayer);
+        event.registerLayerDefinition(MotorboatRenderer.WATER_PATCH_LAYER_LOCATION, MotorboatModel::createWaterPatch);
     }
 
     @SubscribeEvent

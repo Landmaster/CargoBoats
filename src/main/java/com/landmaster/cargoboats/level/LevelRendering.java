@@ -47,8 +47,8 @@ public class LevelRendering {
             var diff = new Vector3f(endPos).sub(startX, startY, startZ);
             if (diff.lengthSquared() > 0.001) {
                 diff.normalize();
-                consumer.addVertex(pose, startX, startY, startZ).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
-                consumer.addVertex(pose, endPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z);
+                consumer.addVertex(pose, startX, startY, startZ).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z).setLineWidth(2);
+                consumer.addVertex(pose, endPos).setColor(0, 255, 0, 255).setNormal(pose, diff.x, diff.y, diff.z).setLineWidth(2);
             }
         }
 
@@ -128,10 +128,12 @@ public class LevelRendering {
                     f2 /= f3;
                     consumer.addVertex(posestack$pose, (float)(p_323073_ + x), (float)(p_323074_ + y), (float)(p_323075_ + z))
                             .setColor(red, green, blue, alpha)
-                            .setNormal(posestack$pose, f, f1, f2);
+                            .setNormal(posestack$pose, f, f1, f2)
+                            .setLineWidth(1);
                     consumer.addVertex(posestack$pose, (float)(p_323076_ + x), (float)(p_323077_ + y), (float)(p_323078_ + z))
                             .setColor(red, green, blue, alpha)
-                            .setNormal(posestack$pose, f, f1, f2);
+                            .setNormal(posestack$pose, f, f1, f2)
+                            .setLineWidth(1);
                 }
         );
     }

@@ -88,21 +88,21 @@ public class AdjustableBoundingBoxScreen extends AbstractContainerScreen<Adjusta
         graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
         if (menu.detector != null) {
             graphics.text(font,
-                    Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), leftPos + 8, topPos + 22, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.min"), 8, topPos + 22, 0xff000000, false);
             graphics.text(font,
-                    Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), leftPos + 8, topPos + 52, 0xff000000, false);
+                    Component.translatable("gui.cargoboats.adjustable_bounding_box.max"), 8, topPos + 52, 0xff000000, false);
             var text = Integer.toString(menu.detector.minX);
-            graphics.text(font, text, leftPos + 28 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, 28 - font.width(text)/2, 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxX);
-            graphics.text(font, text, leftPos + 28 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, 28 - font.width(text)/2, 68, 0xff000000, false);
             text = Integer.toString(menu.detector.minY);
-            graphics.text(font, text, leftPos + 70 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, 70 - font.width(text)/2, 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxY);
-            graphics.text(font, text, leftPos + 70 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, 70 - font.width(text)/2, 68, 0xff000000, false);
             text = Integer.toString(menu.detector.minZ);
-            graphics.text(font, text, leftPos + 112 - font.width(text)/2, topPos + 36, 0xff000000, false);
+            graphics.text(font, text, 112 - font.width(text)/2, 36, 0xff000000, false);
             text = Integer.toString(menu.detector.maxZ);
-            graphics.text(font, text, leftPos + 112 - font.width(text)/2, topPos + 68, 0xff000000, false);
+            graphics.text(font, text, 112 - font.width(text)/2, 68, 0xff000000, false);
         }
     }
 

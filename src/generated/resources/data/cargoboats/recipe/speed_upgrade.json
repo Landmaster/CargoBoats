@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "l": {
-      "tag": "c:gems/lapis"
-    },
-    "r": {
-      "item": "minecraft:rabbit_hide"
-    },
-    "s": {
-      "tag": "c:dusts/redstone"
-    }
+    "l": "#c:gems/lapis",
+    "r": "minecraft:rabbit_hide",
+    "s": "#c:dusts/redstone"
   },
   "pattern": [
     "rlr",
@@ -18,7 +12,6 @@
     "rlr"
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:speed_upgrade"
   }
 }

@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "l": {
-      "tag": "c:gems/lapis"
-    },
-    "g": {
-      "tag": "c:ingots/gold"
-    },
-    "b": {
-      "item": "minecraft:barrel"
-    }
+    "b": "#c:barrels/wooden",
+    "g": "#c:ingots/gold",
+    "l": "#c:gems/lapis"
   },
   "pattern": [
     "glg",
@@ -18,7 +12,6 @@
     "glg"
   ],
   "result": {
-    "count": 1,
     "id": "cargoboats:capacity_upgrade"
   }
 }

@@ -24,8 +24,8 @@ public class ClientUtil {
     public static final Identifier FLUID_METER = Identifier.fromNamespaceAndPath(CargoBoats.MODID, "textures/gui/util/fluid_meter.png");
 
     public static void drawEnergyBar(int energy, int maxEnergy, GuiGraphicsExtractor guiGraphics, int x, int y) {
-        guiGraphics.blit(POWER_METER_UNACTIVATED, x, y, 0, 0, 128, 16, 128, 16);
-        guiGraphics.blit(POWER_METER, x, y, 0, 0, Math.clamp(14 + 114L * energy / maxEnergy, 14, 128), 16, 128, 16);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, POWER_METER_UNACTIVATED, x, y, 0, 0, 128, 16, 128, 16);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, POWER_METER, x, y, 0, 0, Math.clamp(14 + 114L * energy / maxEnergy, 14, 128), 16, 128, 16);
     }
 
     public static void drawEnergyBarTooltip(int energy, int maxEnergy, GuiGraphicsExtractor guiGraphics, int x, int y, int mouseX, int mouseY, Font font) {
@@ -53,6 +53,6 @@ public class ClientUtil {
 
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, Math.clamp(64L * fluidStack.getAmount() / capacity, 0, 64), 12, color);
 
-        guiGraphics.blit(FLUID_METER, x, y, 0, 0, 64, 12, 64, 32);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, FLUID_METER, x, y, 0, 0, 64, 12, 64, 32);
     }
 }
