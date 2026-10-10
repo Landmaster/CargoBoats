@@ -1,0 +1,11 @@
+{
+  "name": "Motorboat Coloring",
+  "icon": "minecraft:purple_dye",
+  "category": "cargoboats:misc_utility",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Motorboats can have their color changed simply by right-clicking any dye on them (this uses up the dye); blue is the default color. Make sure you use a wrench to pick up your motorboat if you want to save its color."
+    }
+  ]
+}

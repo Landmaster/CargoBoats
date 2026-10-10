@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Unit;
+import net.minecraft.world.item.DyeColor;
 
 import javax.annotation.Nonnull;
 
@@ -43,6 +44,7 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat, MotorboatRender
         state.isUnderWater = entity.isUnderWater();
         state.yRotation = entity.getYRot(partialTicks);
         state.rotorRotation += partialTicks * entity.rotorSpeed * 10;
+        state.color = entity.getColor();
     }
 
     @Override
@@ -51,7 +53,7 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat, MotorboatRender
         poseStack.translate(0, 1.5, 0);
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yRotation + 180));
-        submitNodeCollector.submitModel(model, state, poseStack, LAYER_LOCATION.model(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+        submitNodeCollector.submitModel(model, state, poseStack, state.motorboatTexture("motorboat"), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         if (!state.isUnderWater) {
             submitNodeCollector.submitModel(
                     this.waterPatchModel, Unit.INSTANCE, poseStack, WATER_PATCH_LAYER_LOCATION.model(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null
@@ -60,27 +62,4 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat, MotorboatRender
         poseStack.popPose();
         super.submit(state, poseStack, submitNodeCollector, camera);
     }
-
-//    @Override
-//    public void render(@Nonnull Motorboat p_entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-//        poseStack.pushPose();
-//        poseStack.translate(0, 1.5, 0);
-//        poseStack.scale(-1.0F, -1.0F, 1.0F);
-//        poseStack.mulPose(Axis.YP.rotationDegrees(entityYaw + 180));
-//        this.model.setupAnim(p_entity, 0.0F, 0.0F, p_entity.tickCount + partialTick, 0.0F, 0.0F);
-//        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(LAYER_LOCATION.getModel()));
-//        this.model.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY);
-//        if (!p_entity.isUnderWater()) {
-//            VertexConsumer vertexconsumer1 = bufferSource.getBuffer(RenderType.waterMask());
-//            model.waterPatch().render(poseStack, vertexconsumer1, packedLight, OverlayTexture.NO_OVERLAY);
-//        }
-//        poseStack.popPose();
-//        super.render(p_entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
-//    }
-//
-//    @Nonnull
-//    @Override
-//    public Identifier getTextureLocation(@Nonnull Motorboat motorboat) {
-//        return LAYER_LOCATION.getModel();
-//    }
 }

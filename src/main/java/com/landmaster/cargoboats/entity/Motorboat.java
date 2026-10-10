@@ -16,6 +16,7 @@ import it.unimi.dsi.fastutil.objects.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -36,6 +37,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -79,6 +82,10 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
 
     public float rotorSpeed = 0;
 
+    private static final EntityDataAccessor<DyeColor> COLOR = SynchedEntityData.defineId(
+            Motorboat.class,
+            CargoBoats.DYE_COLOR_EDS.get()
+    );
     private static final EntityDataAccessor<MotorboatSchedule> MOTORBOAT_SCHEDULE = SynchedEntityData.defineId(
             Motorboat.class,
             CargoBoats.MOTORBOAT_SCHEDULE_EDS.get()
@@ -187,6 +194,7 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
         builder.define(ENERGY, 0);
         builder.define(CLIENT_MOTORBOAT_SPEED, 1.0f);
         builder.define(LAVA_UPGRADE_ACTIVE, true);
+        builder.define(COLOR, DyeColor.BLUE);
     }
 
     @Override
@@ -199,6 +207,7 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
         getEntityData().set(ENERGY, input.getIntOr("EnergyStorage", 0));
         getEntityData().set(MOTORBOAT_SCHEDULE, input.read("MotorboatSchedule", MotorboatSchedule.CODEC).get());
         getEntityData().set(NEXT_STOP_INDEX, input.getIntOr("NextStop", 0));
+        getEntityData().set(COLOR, input.read("Color", DyeColor.CODEC).orElse(DyeColor.BLUE));
         dockTime = input.getIntOr("DockTime", 0);
         automationEnabled = input.getBooleanOr("AutomationEnabled", false);
         input.readChild("Upgrades", upgradeHandler);
@@ -215,6 +224,7 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
         output.putInt("EnergyStorage", getEntityData().get(ENERGY));
         output.store("MotorboatSchedule", MotorboatSchedule.CODEC, getEntityData().get(MOTORBOAT_SCHEDULE));
         output.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
+        output.store("Color", DyeColor.CODEC, getEntityData().get(COLOR));
         output.putInt("DockTime", dockTime);
         output.putBoolean("AutomationEnabled", automationEnabled);
         output.putChild("Upgrades", upgradeHandler);
@@ -228,6 +238,11 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
     public boolean lavaUpgradeActive() {
         return getEntityData().get(LAVA_UPGRADE_ACTIVE);
     }
+
+    public DyeColor getColor() {
+        return getEntityData().get(COLOR);
+    }
+
 
     @Nullable
     @Override
@@ -574,6 +589,14 @@ public class Motorboat extends Boat implements MenuProvider, HasCustomInventoryS
     @Override
     public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull Vec3 location) {
         var stack = player.getItemInHand(hand);
+
+        if (stack.getItem() instanceof DyeItem dyeItem && !player.isSecondaryUseActive() && stack.get(DataComponents.DYE) != getColor()) {
+            getEntityData().set(COLOR, stack.get(DataComponents.DYE));
+            if (!player.hasInfiniteMaterials()) {
+                stack.shrink(1);
+            }
+            return InteractionResult.CONSUME;
+        }
 
         if (stack.is(WrenchHook.WRENCH_TAG) && player.isSecondaryUseActive()) {
             var wrenchDrop = getWrenchDrop();

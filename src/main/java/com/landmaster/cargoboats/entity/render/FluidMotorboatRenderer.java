@@ -45,6 +45,7 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat, Motor
         state.rotorRotation += partialTicks * entity.rotorSpeed * 10;
         state.fluidStack = entity.tank.getResource(0).toStack(entity.tank.getAmountAsInt(0));
         state.tankCapacity = entity.tank.getCapacityAsInt(0, entity.tank.getResource(0));
+        state.color = entity.getColor();
     }
 
     @Override
@@ -53,7 +54,7 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat, Motor
         poseStack.translate(0, 1.5, 0);
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yRotation + 180));
-        submitNodeCollector.submitModel(model, state, poseStack, LAYER_LOCATION.model(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
+        submitNodeCollector.submitModel(model, state, poseStack, state.motorboatTexture("fluid_motorboat"), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null);
         if (!state.isUnderWater) {
             submitNodeCollector.submitModel(
                     this.waterPatchModel, Unit.INSTANCE, poseStack, MotorboatRenderer.WATER_PATCH_LAYER_LOCATION.model(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, null
