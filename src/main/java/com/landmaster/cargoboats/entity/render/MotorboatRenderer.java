@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 
 import javax.annotation.Nonnull;
 
@@ -32,7 +33,7 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat> {
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYaw + 180));
         this.model.setupAnim(p_entity, 0.0F, 0.0F, p_entity.tickCount + partialTick, 0.0F, 0.0F);
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(LAYER_LOCATION.getModel()));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(getTextureLocation(p_entity)));
         this.model.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY);
         if (!p_entity.isUnderWater()) {
             VertexConsumer vertexconsumer1 = bufferSource.getBuffer(RenderType.waterMask());
@@ -45,6 +46,10 @@ public class MotorboatRenderer extends EntityRenderer<Motorboat> {
     @Nonnull
     @Override
     public ResourceLocation getTextureLocation(@Nonnull Motorboat motorboat) {
-        return LAYER_LOCATION.getModel();
+        if (motorboat.getColor() == DyeColor.BLUE) {
+            return LAYER_LOCATION.getModel();
+        }
+        return ResourceLocation.fromNamespaceAndPath(
+                CargoBoats.MODID, String.format("textures/entity/motorboat_%s.png", motorboat.getColor()));
     }
 }

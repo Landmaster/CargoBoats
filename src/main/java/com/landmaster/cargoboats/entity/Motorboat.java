@@ -37,6 +37,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -74,6 +76,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     public final AnimationState rotorAnimationState = new AnimationState();
     public float rotorSpeed = 0;
 
+    private static final EntityDataAccessor<DyeColor> COLOR = SynchedEntityData.defineId(
+            Motorboat.class,
+            CargoBoats.DYE_COLOR_EDS.get()
+    );
     private static final EntityDataAccessor<MotorboatSchedule> MOTORBOAT_SCHEDULE = SynchedEntityData.defineId(
             Motorboat.class,
             CargoBoats.MOTORBOAT_SCHEDULE_EDS.get()
@@ -183,6 +189,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         builder.define(ENERGY, 0);
         builder.define(CLIENT_MOTORBOAT_SPEED, 1.0f);
         builder.define(LAVA_UPGRADE_ACTIVE, true);
+        builder.define(COLOR, DyeColor.BLUE);
     }
 
     @Override
@@ -195,6 +202,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         getEntityData().set(ENERGY, compound.getInt("EnergyStorage"));
         getEntityData().set(MOTORBOAT_SCHEDULE, MotorboatSchedule.CODEC.parse(NbtOps.INSTANCE, compound.get("MotorboatSchedule")).getOrThrow());
         getEntityData().set(NEXT_STOP_INDEX, compound.getInt("NextStop"));
+        getEntityData().set(COLOR, DyeColor.CODEC.parse(NbtOps.INSTANCE, compound.get("Color")).result().orElse(DyeColor.BLUE));
         dockTime = compound.getInt("DockTime");
         automationEnabled = compound.getBoolean("AutomationEnabled");
         upgradeHandler.deserializeNBT(registryAccess(), compound.getCompound("Upgrades"));
@@ -212,6 +220,7 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
         compound.putInt("EnergyStorage", getEnergyStored());
         compound.put("MotorboatSchedule", MotorboatSchedule.CODEC.encodeStart(NbtOps.INSTANCE, getMotorboatSchedule()).getOrThrow());
         compound.putInt("NextStop", getEntityData().get(NEXT_STOP_INDEX));
+        compound.put("Color", DyeColor.CODEC.encodeStart(NbtOps.INSTANCE, getEntityData().get(COLOR)).getOrThrow());
         compound.putInt("DockTime", dockTime);
         compound.putBoolean("AutomationEnabled", automationEnabled);
         compound.put("Upgrades", upgradeHandler.serializeNBT(registryAccess()));
@@ -225,6 +234,10 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
 
     public boolean lavaUpgradeActive() {
         return getEntityData().get(LAVA_UPGRADE_ACTIVE);
+    }
+
+    public DyeColor getColor() {
+        return getEntityData().get(COLOR);
     }
 
     @Nonnull
@@ -575,6 +588,14 @@ public class Motorboat extends Boat implements IEnergyStorage, MenuProvider, Has
     @Override
     public InteractionResult interact(@Nonnull Player player, @Nonnull InteractionHand hand) {
         var stack = player.getItemInHand(hand);
+
+        if (stack.getItem() instanceof DyeItem dyeItem && !player.isSecondaryUseActive() && dyeItem.getDyeColor() != getColor()) {
+            getEntityData().set(COLOR, dyeItem.getDyeColor());
+            if (!player.hasInfiniteMaterials()) {
+                stack.shrink(1);
+            }
+            return InteractionResult.CONSUME;
+        }
 
         if (stack.is(WrenchHook.WRENCH_TAG) && player.isSecondaryUseActive()) {
             var wrenchDrop = getWrenchDrop();
