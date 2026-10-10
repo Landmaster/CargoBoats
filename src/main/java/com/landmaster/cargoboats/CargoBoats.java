@@ -85,6 +85,8 @@ public class CargoBoats {
 
     public static final Supplier<EntityDataSerializer<MotorboatSchedule>> MOTORBOAT_SCHEDULE_EDS = ENTITY_DATA_SERIALIZERS.register("motorboat_schedule",
             () -> EntityDataSerializer.forValueType(MotorboatSchedule.STREAM_CODEC));
+    public static final Supplier<EntityDataSerializer<DyeColor>> DYE_COLOR_EDS = ENTITY_DATA_SERIALIZERS.register("dye_color",
+            () -> EntityDataSerializer.forValueType(DyeColor.STREAM_CODEC));
 
     public static final Supplier<DataComponentType<MotorboatSchedule>> MOTORBOAT_SCHEDULE = DATA_COMPONENTS.registerComponentType("motorboat_schedule", builder ->
             builder.networkSynchronized(MotorboatSchedule.STREAM_CODEC).persistent(MotorboatSchedule.CODEC));

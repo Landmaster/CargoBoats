@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +34,7 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat> {
         poseStack.scale(-1.0F, -1.0F, 1.0F);
         poseStack.mulPose(Axis.YP.rotationDegrees(entityYaw + 180));
         this.model.setupAnim(p_entity, 0.0F, 0.0F, p_entity.tickCount + partialTick, 0.0F, 0.0F);
-        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(LAYER_LOCATION.getModel()));
+        VertexConsumer vertexconsumer = bufferSource.getBuffer(this.model.renderType(getTextureLocation(p_entity)));
         this.model.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY);
         if (!p_entity.isUnderWater()) {
             VertexConsumer vertexconsumer1 = bufferSource.getBuffer(RenderType.waterMask());
@@ -47,10 +48,6 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat> {
         poseStack.mulPose(Axis.ZP.rotationDegrees(180));
         poseStack.scale(7.98f / 16, (float) (7.98 * Math.clamp((double)fluidStack.getAmount() / capacity, 0.0, 1.0) / 16), 6.98f / 16);
         FluidRenderUtil.renderCubeUsingQuads(fluidStack, partialTick, poseStack, bufferSource, packedLight, packedLight);
-//        poseStack.translate(-0.56f, -0.25f, 0.37f);
-//        poseStack.mulPose(Axis.XP.rotationDegrees(180));
-//        poseStack.scale(0.73f, 0.73f * Math.clamp((float)fluidStack.getAmount() / capacity, 0.0f, 1.0f), 0.73f);
-//        FluidRenderUtil.renderCubeUsingQuads(fluidStack, partialTick, poseStack, bufferSource, packedLight, packedLight);
         poseStack.popPose();
 
         poseStack.popPose();
@@ -60,6 +57,10 @@ public class FluidMotorboatRenderer extends EntityRenderer<FluidMotorboat> {
     @Nonnull
     @Override
     public ResourceLocation getTextureLocation(@Nonnull FluidMotorboat motorboat) {
-        return LAYER_LOCATION.getModel();
+        if (motorboat.getColor() == DyeColor.BLUE) {
+            return LAYER_LOCATION.getModel();
+        }
+        return ResourceLocation.fromNamespaceAndPath(
+                CargoBoats.MODID, String.format("textures/entity/fluid_motorboat_%s.png", motorboat.getColor()));
     }
 }
